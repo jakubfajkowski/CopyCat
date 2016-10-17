@@ -7,16 +7,22 @@ import java.util.Date;
 public class FileInfo {
     private String name;
     private Long size;
-    private String path;
+    private String extension;
     private Date lastModified;
+    private String path;
 
     public FileInfo(File file){
         this.name = file.getName();
         this.size = file.length();
-        this.path = file.getPath();
+        this.extension = getExtensionFromFileName(this.name);
         this.lastModified = new Date(file.lastModified());
+        this.path = file.getPath();
     }
 
+    private String getExtensionFromFileName(String fileName){
+        String[] parts = fileName.split("\\.");
+        return parts[parts.length - 1];
+    }
 
     public String getName() {
         return name;
@@ -33,11 +39,15 @@ public class FileInfo {
         return new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
-    public String getPath() {
-        return path;
+    public String getExtension() {
+        return extension;
     }
 
     public Date getLastModified() {
         return lastModified;
+    }
+
+    public String getPath() {
+        return path;
     }
 }

@@ -37,7 +37,7 @@ public class Main extends Application {
         Platform.setImplicitExit(false);
         Parent root = FXMLLoader.load(getClass().getResource("mainView.fxml"));
         primaryStage.setTitle("CopyCat");
-        primaryStage.setScene(new Scene(root, 640, 480));
+        primaryStage.setScene(new Scene(root, 852, 400));
         primaryStage.show();
 
 
