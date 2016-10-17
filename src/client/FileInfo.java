@@ -1,10 +1,11 @@
 package client;
 
 import java.io.File;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Date;
 
-public class FileInfo {
+public class FileInfo implements Serializable {
     private String name;
     private Long size;
     private String extension;
