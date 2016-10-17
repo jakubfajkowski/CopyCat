@@ -50,12 +50,16 @@ public class TableController extends Controller {
         table.setItems(records);
     }
 
-    public void addRecord(FileInfo fileInfo){
+    void addRecord(FileInfo fileInfo){
         records.add(fileInfo);
     }
 
-    public void popSelectedRecord(){
-        FileInfo fileInfoToRemove = table.getSelectionModel().getSelectedItem();
+    void popSelectedRecord(){
+        FileInfo fileInfoToRemove = getSelectedFileRecord();
         records.remove(fileInfoToRemove);
+    }
+
+    FileInfo getSelectedFileRecord(){
+        return table.getSelectionModel().getSelectedItem();
     }
 }
