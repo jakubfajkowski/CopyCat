@@ -1,5 +1,3 @@
-package client;
-
 import java.awt.AWTException;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;

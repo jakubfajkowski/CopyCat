@@ -1,27 +1,25 @@
-package client;
-
 import javafx.scene.control.Alert;
 
 import java.io.*;
 import java.util.Properties;
 
-class PropertiesManager {
+public class PropertiesManager {
     private Properties properties = new Properties();
 
     private static PropertiesManager ourInstance = new PropertiesManager();
-    static PropertiesManager getInstance() {
+    public static PropertiesManager getInstance() {
         return ourInstance;
     }
     private PropertiesManager() {
         load();
     }
 
-    void setProperty(String key, String value){
+    public void setProperty(String key, String value){
         properties.setProperty(key, value);
         save();
     }
 
-    String getProperty(String key){
+    public String getProperty(String key){
         return properties.getProperty(key);
     }
 

@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CopyCat.iml" filepath="$PROJECT_DIR$/CopyCat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CopyCatClient/CopyCatClient.iml" filepath="$PROJECT_DIR$/CopyCatClient/CopyCatClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CopyCatServer/CopyCatServer.iml" filepath="$PROJECT_DIR$/CopyCatServer/CopyCatServer.iml" />
     </modules>
   </component>
 </project>
