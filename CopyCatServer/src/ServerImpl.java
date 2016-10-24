@@ -6,12 +6,12 @@ import java.rmi.RemoteException;
 public class ServerImpl implements Server {
     @Override
     public boolean login(ClientCredentials clientCredentials) throws RemoteException {
-        return authoriztionService.login(clientCredentials);
+        return authorizationService.login(clientCredentials);
     }
 
     @Override
     public String register(ClientCredentials clientCredentials) throws RemoteException {
-        return authoriztionService.register(clientCredentials);
+        return authorizationService.register(clientCredentials);
     }
 
     @Override

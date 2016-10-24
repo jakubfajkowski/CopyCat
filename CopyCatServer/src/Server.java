@@ -6,7 +6,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface Server extends Remote {
-    AuthorizationServiceImpl authoriztionService = new AuthorizationServiceImpl();
+    AuthorizationServiceImpl authorizationService = new AuthorizationServiceImpl();
     boolean login(ClientCredentials clientCredentials) throws RemoteException;
     String register(ClientCredentials clientCredentials) throws RemoteException;
 
