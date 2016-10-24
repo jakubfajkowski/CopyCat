@@ -1,13 +1,15 @@
+package services;
+
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class ClientCredentials implements Serializable{
-    private String login;
+    private String username;
     private byte[] hashPassword;
 
-    ClientCredentials(String login, String password){
-        this.login = login;
+    ClientCredentials(String username, String password){
+        this.username = username;
         try {
             this.hashPassword = MessageDigest.getInstance("MD5").digest(password.getBytes());
         } catch (NoSuchAlgorithmException e) {
@@ -15,11 +17,11 @@ public class ClientCredentials implements Serializable{
         }
     }
 
-    public String getLogin() {
-        return login;
+    public String getUsername() {
+        return username;
     }
 
-    public byte[] hashPassword() {
+    public byte[] getHashPassword() {
         return hashPassword;
     }
 }
