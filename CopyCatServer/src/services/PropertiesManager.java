@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.Properties;
 
 public class PropertiesManager {
+    private String fileName;
     private Properties properties = new Properties();
 
     private static PropertiesManager ourInstance = new PropertiesManager();
@@ -27,7 +28,7 @@ public class PropertiesManager {
 
     private void save(){
         try{
-            File propertiesFile = new File("./credentials.properties");
+            File propertiesFile = new File("./" + fileName + ".properties");
             FileOutputStream fileOutputStream = new FileOutputStream(propertiesFile, false);
             properties.store(fileOutputStream, "Locally generated credentials file");
         } catch (IOException e) {
@@ -39,9 +40,9 @@ public class PropertiesManager {
     private void load(){
         InputStream inputStream;
         try {
-            inputStream = new FileInputStream("./credentials.properties");
+            inputStream = new FileInputStream("./" + fileName + ".properties");
         } catch (FileNotFoundException e) {
-            inputStream = getClass().getResourceAsStream("credentials.properties");
+            inputStream = getClass().getResourceAsStream(fileName + ".properties");
         }
 
         try {
@@ -59,5 +60,9 @@ public class PropertiesManager {
         alert.setContentText(e.getMessage());
 
         alert.showAndWait();
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

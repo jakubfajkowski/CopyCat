@@ -38,6 +38,7 @@ public class MainController extends Controller{
 
     private void loadProperties() throws IOException {
         PropertiesManager pm = PropertiesManager.getInstance();
+        pm.setFileName("config");
 
         serverIpTextField.setText(pm.getProperty("SERVER_IP"));
         portTextField.setText(pm.getProperty("PORT"));

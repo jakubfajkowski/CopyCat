@@ -3,6 +3,10 @@ package services;
 public class AuthorizationServiceImpl implements AuthorizationService {
     private PropertiesManager propertiesManager = PropertiesManager.getInstance();
 
+    public AuthorizationServiceImpl() {
+        propertiesManager.setFileName("credentials");
+    }
+
     @Override
     public boolean login(ClientCredentials clientCredentials) {
         return isValidPassword(clientCredentials);
