@@ -10,6 +10,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainController extends Controller{
+    @FXML private LoginController loginController;
+
     @FXML private TableView table;
     @FXML private TableController tableController;
 
