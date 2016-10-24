@@ -7,13 +7,11 @@ public class PropertiesManager {
     private String fileName;
     private Properties properties = new Properties();
 
-    private static PropertiesManager ourInstance = new PropertiesManager();
+    private static PropertiesManager propertiesManager = new PropertiesManager();
     public static PropertiesManager getInstance() {
-        return ourInstance;
+        return propertiesManager;
     }
-    private PropertiesManager() {
-        load();
-    }
+    private PropertiesManager() {}
 
     public void setProperty(String key, String value){
         properties.setProperty(key, value);
@@ -35,7 +33,7 @@ public class PropertiesManager {
 
     }
 
-    private void load(){
+    public void load(){
         InputStream inputStream;
         try {
             inputStream = new FileInputStream("./" + fileName + ".properties");
