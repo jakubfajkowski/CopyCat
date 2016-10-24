@@ -13,14 +13,8 @@ public class FileInfo implements Serializable {
     public FileInfo(File file){
         this.name = file.getName();
         this.size = file.length();
-        this.extension = getExtensionFromFileName(this.name);
         this.lastModified = new Date(file.lastModified());
         this.path = file.getPath();
-    }
-
-    private String getExtensionFromFileName(String fileName){
-        String[] parts = fileName.split("\\.");
-        return parts[parts.length - 1];
     }
 
     public String getName() {
@@ -39,7 +33,12 @@ public class FileInfo implements Serializable {
     }
 
     public String getExtension() {
-        return extension;
+        return getExtensionFromFileName(this.name);
+    }
+
+    private String getExtensionFromFileName(String fileName){
+        String[] parts = fileName.split("\\.");
+        return parts[parts.length - 1];
     }
 
     public Date getLastModified() {
