@@ -1,0 +1,53 @@
+package client;
+
+import java.rmi.*;
+
+/**
+ * Created by FajQa on 18.10.2016.
+ */
+public class Client {
+    private ClientCredentials clientCredentials;
+
+    public Client(ClientCredentials clientCredentials){
+        this.clientCredentials = clientCredentials;
+        initializeServerConnection();
+    }
+
+    private void initializeServerConnection(){
+        /*if (System.getSecurityManager() == null) {
+            System.setSecurityManager(new SecurityManager());
+        }*/
+
+        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\CopyCatClient\\ClientTruststore");
+        //System.setProperty("javax.net.ssl.trustStorePassword", "CopyCat");
+
+        /*try {
+            Registry registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);//, new SslRMIClientSocketFactory());
+
+            client.Server server = (client.Server) registry.lookup("client.Server");
+
+        } catch (NotBoundException | RemoteException e) {
+            e.printStackTrace();
+        }*/
+        //System.setProperty("java.security.policy", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\CopyCatClient\\rsc\\client.policy");
+        //System.setSecurityManager(new SecurityManager());
+        try {
+            Remote remote = Naming.lookup("SERVER");
+            Server server = null;
+            if (remote instanceof Server)
+                server = (Server) remote;
+            //String result = server.login("Hello server");
+            //System.out.println(result);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    public void login(){
+
+    }
+
+    public void register(){
+
+    }
+}
