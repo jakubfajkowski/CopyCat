@@ -12,9 +12,9 @@
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.102" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.MainController">
    <right>
       <VBox prefHeight="400.0" prefWidth="150.0" BorderPane.alignment="CENTER">
-         <Label text="client.server.Server IP and port:" />
+         <Label text="Server IP and port:" />
          <HBox prefHeight="25.0" prefWidth="150.0">
-            <TextField fx:id="serverIpTextField" alignment="CENTER_RIGHT" onAction="#editServerIpProperty" prefHeight="25.0" prefWidth="100.0" promptText="client.server.Server IP" />
+            <TextField fx:id="serverIpTextField" alignment="CENTER_RIGHT" onAction="#editServerIpProperty" prefHeight="25.0" prefWidth="100.0" promptText="Server IP" />
             <TextField fx:id="portTextField" onAction="#editPortProperty" prefHeight="25.0" prefWidth="50.0" promptText="Port" />
          </HBox>
          <Label text="Sync at:" />

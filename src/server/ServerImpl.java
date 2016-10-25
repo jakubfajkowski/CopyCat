@@ -1,7 +1,8 @@
 package server;
 
+import common.Server;
 import server.services.AuthorizationServiceImpl;
-import server.services.ClientCredentials;
+import common.ClientCredentials;
 import server.services.FileServiceImpl;
 
 import java.io.File;

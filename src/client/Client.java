@@ -1,10 +1,10 @@
 package client;
 
+import common.ClientCredentials;
+import common.Server;
+
 import java.rmi.*;
 
-/**
- * Created by FajQa on 18.10.2016.
- */
 public class Client {
     private ClientCredentials clientCredentials;
 
@@ -24,7 +24,7 @@ public class Client {
         /*try {
             Registry registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);//, new SslRMIClientSocketFactory());
 
-            client.Server server = (client.Server) registry.lookup("client.Server");
+            common.Server server = (common.Server) registry.lookup("common.Server");
 
         } catch (NotBoundException | RemoteException e) {
             e.printStackTrace();

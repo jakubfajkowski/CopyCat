@@ -1,4 +1,4 @@
-package client;
+package common;
 
 import java.io.Serializable;
 import java.security.MessageDigest;
@@ -8,7 +8,7 @@ public class ClientCredentials implements Serializable{
     private String username;
     private byte[] hashPassword;
 
-    ClientCredentials(String username, String password){
+    public ClientCredentials(String username, String password){
         this.username = username;
         try {
             this.hashPassword = MessageDigest.getInstance("MD5").digest(password.getBytes());

@@ -1,5 +1,6 @@
 package client;
 
+import common.PropertiesManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;

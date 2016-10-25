@@ -1,5 +1,6 @@
 package server.services;
 
+import common.ClientCredentials;
 import org.junit.Assert;
 import org.junit.Test;
 

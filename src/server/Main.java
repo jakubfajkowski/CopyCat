@@ -1,5 +1,7 @@
 package server;
 
+import common.Server;
+
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -30,9 +32,9 @@ public class Main{
         }
 
         try {
-            client.server.Server e = new server.ServerImpl();
+            client.common.Server e = new server.ServerImpl();
             LocateRegistry.createRegistry(1099);
-            Naming.rebind("client.server.Server", e);
+            Naming.rebind("client.common.Server", e);
         } catch (Exception x) {
             System.out.println(x.toString());
         }*/

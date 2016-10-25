@@ -1,6 +1,6 @@
-package server;
+package common;
 
-import server.services.ClientCredentials;
+import common.ClientCredentials;
 
 import java.io.File;
 import java.rmi.Remote;

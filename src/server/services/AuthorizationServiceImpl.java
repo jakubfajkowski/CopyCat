@@ -1,5 +1,8 @@
 package server.services;
 
+import common.ClientCredentials;
+import common.PropertiesManager;
+
 public class AuthorizationServiceImpl implements AuthorizationService {
     private PropertiesManager propertiesManager = PropertiesManager.getInstance();
 
