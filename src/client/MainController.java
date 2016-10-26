@@ -2,8 +2,12 @@ package client;
 
 import common.PropertiesManager;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -28,12 +32,16 @@ public class MainController extends Controller{
     @FXML private Button deleteButton;
     @FXML private Button retrieveButton;
 
+    @FXML private Button loginMenuButton;
+    @FXML private Button signOutButton;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         super.initialize(location, resources);
 
         try {
             loadProperties();
+            createLoginDialog();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,6 +56,20 @@ public class MainController extends Controller{
         portTextField.setText(pm.getProperty("PORT"));
         syncTimeTextField.setText(pm.getProperty("SYNC_TIME"));
         autoSyncButton.setSelected(Boolean.valueOf(pm.getProperty("AUTO_SYNC")));
+    }
+
+    private void createLoginDialog() throws IOException {
+        Stage loginDialogStage = new Stage();
+        loginDialogStage.initModality(Modality.WINDOW_MODAL);
+        loginDialogStage.setTitle("Login");
+        loginDialogStage.setResizable(false);
+        loginDialogStage.setOnCloseRequest(event -> loginDialogStage.close());
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("loginView.fxml"));
+        Parent loginParent = loader.load();
+        loginController = loader.getController();
+        Scene scene = new Scene(loginParent, 250, 110);
+        loginDialogStage.setScene(scene);
+        loginController.setLoginDialogStage(loginDialogStage);
     }
 
     public void addFileToTable(){
@@ -87,5 +109,14 @@ public class MainController extends Controller{
 
     public void toggleAutoSyncProperty(){
         PropertiesManager.getInstance().setProperty("AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
+    }
+
+    public void showLoginDialog() throws IOException {
+        loginController.showLoginDialog();
+    }
+
+    public void signOut(){
+        loginController.signOut();
+        loginController.setUsernameInTitle();
     }
 }

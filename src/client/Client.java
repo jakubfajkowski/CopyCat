@@ -3,51 +3,38 @@ package client;
 import common.ClientCredentials;
 import common.Server;
 
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 public class Client {
     private ClientCredentials clientCredentials;
+    private Server server;
 
-    public Client(ClientCredentials clientCredentials){
+    public Client(ClientCredentials clientCredentials) throws RemoteException, NotBoundException {
         this.clientCredentials = clientCredentials;
         initializeServerConnection();
     }
 
-    private void initializeServerConnection(){
-        /*if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }*/
-
-        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\CopyCatClient\\ClientTruststore");
+    private void initializeServerConnection() throws RemoteException, NotBoundException {
+        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\rsc\\client\\ClientTruststore");
         //System.setProperty("javax.net.ssl.trustStorePassword", "CopyCat");
 
-        /*try {
-            Registry registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);//, new SslRMIClientSocketFactory());
+        Registry registry = LocateRegistry.getRegistry("localhost", Registry.REGISTRY_PORT);//, new SslRMIClientSocketFactory());
 
-            common.Server server = (common.Server) registry.lookup("common.Server");
-
-        } catch (NotBoundException | RemoteException e) {
-            e.printStackTrace();
-        }*/
-        //System.setProperty("java.security.policy", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\CopyCatClient\\rsc\\client.policy");
-        //System.setSecurityManager(new SecurityManager());
-        try {
-            Remote remote = Naming.lookup("SERVER");
-            Server server = null;
-            if (remote instanceof Server)
-                server = (Server) remote;
-            //String result = server.login("Hello server");
-            //System.out.println(result);
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
+        server = (Server) registry.lookup("SERVER");
     }
 
-    public void login(){
-
+    public boolean login() throws RemoteException {
+        return server.login(clientCredentials);
     }
 
-    public void register(){
+    public String register() throws RemoteException {
+        return server.register(clientCredentials);
+    }
 
+    public String getUsername() {
+        return clientCredentials.getUsername();
     }
 }

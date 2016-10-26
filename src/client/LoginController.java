@@ -6,15 +6,25 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ResourceBundle;
 
 public class LoginController extends Controller {
-    Client client;
+    private Client client;
+    private Stage loginDialogStage;
 
     @FXML public TextField usernameTextField;
     @FXML public PasswordField passwordField;
@@ -37,22 +47,42 @@ public class LoginController extends Controller {
             }
         });
 
-
         usernameTextField.requestFocus();
     }
 
-    public void loginClient(ActionEvent actionEvent) {
-        ClientCredentials clientCredentials = collectClientCredentials();
-        client = new Client(clientCredentials);
-        client.login();
-        Main.loginDialogStage.close();
+    public void showLoginDialog() {
+        loginDialogStage.show();
     }
 
-    public void registerClient(ActionEvent actionEvent) {
+    public void loginClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
         client = new Client(clientCredentials);
-        client.register();
-        Main.loginDialogStage.close();
+        boolean response = client.login();
+
+
+        new InfoAlert(processLoginResponse(response));
+
+        if (response)
+            setUsernameInTitle();
+            loginDialogStage.close();
+    }
+
+    private String processLoginResponse(boolean response) {
+        String communicate;
+        if (response)
+            communicate = "Logged in.";
+        else
+            communicate = "Invalid username/password.";
+
+        return communicate;
+    }
+
+    public void registerClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
+        ClientCredentials clientCredentials = collectClientCredentials();
+        client = new Client(clientCredentials);
+        String response = client.register();
+
+        new InfoAlert(response);
     }
 
     private ClientCredentials collectClientCredentials(){
@@ -62,7 +92,27 @@ public class LoginController extends Controller {
         return new ClientCredentials(username, password);
     }
 
-    public void closeProgram(ActionEvent actionEvent) {
-        Platform.exit();
+    public void signOut() {
+        client = null;
+        new InfoAlert("Signed out.");
+    }
+
+    public void closeDialog(ActionEvent actionEvent) {
+        loginDialogStage.close();
+    }
+
+    public void setUsernameInTitle() {
+        if (client != null)
+            Main.primaryStage.setTitle("CopyCat (" + client.getUsername() + ")");
+        else
+            Main.primaryStage.setTitle("CopyCat");
+    }
+
+    public void setLoginDialogStage(Stage loginDialogStage) {
+        this.loginDialogStage = loginDialogStage;
+    }
+
+    public Client getClient() {
+        return client;
     }
 }
