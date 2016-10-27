@@ -1,22 +1,40 @@
-package client;
+package common;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Date;
 
 public class FileInfo implements Serializable {
+    static final long serialVersionUID = 1L;
+
     private String name;
     private Long size;
-    private String extension;
     private Date lastModified;
-    private String path;
+    private Path path;
 
     public FileInfo(File file){
         this.name = file.getName();
         this.size = file.length();
         this.lastModified = new Date(file.lastModified());
-        this.path = file.getPath();
+        this.path = file.toPath();
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject(name);
+        out.writeLong(size);
+        out.writeObject(lastModified);
+        out.writeObject(path.toString());
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        name = (String) in.readObject();
+        size = in.readLong();
+        lastModified = (Date) in.readObject();
+        path = Paths.get((String) in.readObject());
     }
 
     public String getName() {
@@ -47,7 +65,7 @@ public class FileInfo implements Serializable {
         return lastModified;
     }
 
-    public String getPath() {
+    public Path getPath() {
         return path;
     }
 }

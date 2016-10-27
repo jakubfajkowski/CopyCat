@@ -1,5 +1,6 @@
 package client;
 
+import common.FileInfo;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -48,51 +49,28 @@ public class TableController extends Controller {
         lastModified.setCellValueFactory(new PropertyValueFactory<>("lastModified"));
         path.setCellValueFactory(new PropertyValueFactory<>("path"));
 
-        loadSerializedRecords();
         table.setItems(records);
-    }
-
-    private void loadSerializedRecords(){
-        try{
-            FileInputStream fileIn = new FileInputStream("fileinforecords.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-
-            @SuppressWarnings("unchecked")
-            List<FileInfo> list = (List<FileInfo>) in.readObject();
-
-            records = FXCollections.observableList(list);
-        } catch (FileNotFoundException fe) {
-            return;
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     void addRecord(FileInfo fileInfo){
         records.add(fileInfo);
-        serializeRecords(new ArrayList<>(records));
     }
 
     void popSelectedRecord(){
         FileInfo fileInfoToRemove = getSelectedFileRecord();
         records.remove(fileInfoToRemove);
-        serializeRecords(new ArrayList<>(records));
-    }
-
-    private void serializeRecords(Serializable records){
-        try {
-            FileOutputStream fileOut = new FileOutputStream("fileinforecords.ser");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(records);
-            out.close();
-            fileOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     FileInfo getSelectedFileRecord(){
         return table.getSelectionModel().getSelectedItem();
     }
+
+    public ObservableList<FileInfo> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<FileInfo> records) {
+        this.records.setAll(records);
+    }
+
 }

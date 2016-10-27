@@ -1,8 +1,12 @@
 package server.services;
 
-import java.io.File;
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import common.FileInfo;
+
+import java.io.IOException;
+import java.rmi.RemoteException;
 
 public interface FileService {
-    void storeFile(File file);
-    void retrieveFile(String filePath);
+    void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream);
+    RemoteInputStream getFile(FileInfo fileInfo) throws RemoteException, IOException;
 }

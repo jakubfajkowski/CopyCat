@@ -1,35 +1,35 @@
-package server.services;
+package client;
 
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
 import common.FileInfo;
+import common.Server;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class FileServiceImpl implements FileService {
-    private String usernameRootFolderName;
+public class FileTransferController {
+    private Client client;
+    private Server server;
 
-    @Override
-    public void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) {
-        try {
-            InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
-            Path target = fileInfo.getPath();
 
-            Files.copy(inputStream, target, REPLACE_EXISTING);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
+        InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
+        Path target = fileInfo.getPath();
+
+        Files.copy(inputStream, target, REPLACE_EXISTING);
     }
 
-    @Override
-    public RemoteInputStream getFile(FileInfo fileInfo) throws RemoteException, IOException {
+    public RemoteInputStream sendFile(FileInfo fileInfo) throws IOException {
         RemoteInputStreamServer remoteInputStreamServer = null;
         String path = fileInfo.getPath().toString();
 
@@ -44,8 +44,19 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    public Client getClient() {
+        return client;
+    }
 
-    public void setUsernameRootFolderName(String usernameRootFolderName) {
-        this.usernameRootFolderName = usernameRootFolderName;
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
     }
 }

@@ -1,5 +1,6 @@
 package client;
 
+import common.FileInfo;
 import org.junit.Test;
 
 import java.io.File;

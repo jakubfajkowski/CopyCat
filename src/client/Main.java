@@ -27,7 +27,7 @@ public class Main extends Application {
 
     private void showMainWindow(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("mainView.fxml"));
-        primaryStage.setTitle("CopyCat");
+        primaryStage.setTitle("CopyCat (public)");
         primaryStage.setScene(new Scene(root, 852, 400));
         primaryStage.show();
     }

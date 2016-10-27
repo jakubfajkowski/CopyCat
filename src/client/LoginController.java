@@ -1,6 +1,7 @@
 package client;
 
 import common.ClientCredentials;
+import common.Server;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -24,6 +25,8 @@ import java.util.ResourceBundle;
 
 public class LoginController extends Controller {
     private Client client;
+    private Server server;
+
     private Stage loginDialogStage;
 
     @FXML public TextField usernameTextField;
@@ -51,14 +54,17 @@ public class LoginController extends Controller {
     }
 
     public void showLoginDialog() {
-        loginDialogStage.show();
+        loginDialogStage.showAndWait();
+    }
+
+    public void closeLoginDialog(ActionEvent actionEvent) {
+        loginDialogStage.close();
     }
 
     public void loginClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
-        client = new Client(clientCredentials);
-        boolean response = client.login();
-
+        client.setClientCredentials(clientCredentials);
+        boolean response = server.login(client.getClientCredentials());
 
         new InfoAlert(processLoginResponse(response));
 
@@ -77,10 +83,17 @@ public class LoginController extends Controller {
         return communicate;
     }
 
+    public void setUsernameInTitle() {
+        if (client != null)
+            Main.primaryStage.setTitle("CopyCat (" + client.getClientCredentials().getUsername() + ")");
+        else
+            Main.primaryStage.setTitle("CopyCat");
+    }
+
     public void registerClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
-        client = new Client(clientCredentials);
-        String response = client.register();
+        client.setClientCredentials(clientCredentials);
+        String response = server.register(client.getClientCredentials());
 
         new InfoAlert(response);
     }
@@ -92,27 +105,23 @@ public class LoginController extends Controller {
         return new ClientCredentials(username, password);
     }
 
-    public void signOut() {
-        client = null;
-        new InfoAlert("Signed out.");
-    }
-
-    public void closeDialog(ActionEvent actionEvent) {
-        loginDialogStage.close();
-    }
-
-    public void setUsernameInTitle() {
-        if (client != null)
-            Main.primaryStage.setTitle("CopyCat (" + client.getUsername() + ")");
-        else
-            Main.primaryStage.setTitle("CopyCat");
-    }
-
     public void setLoginDialogStage(Stage loginDialogStage) {
         this.loginDialogStage = loginDialogStage;
     }
 
     public Client getClient() {
         return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Server getServer() {
+        return server;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
     }
 }

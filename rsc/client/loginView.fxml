@@ -49,7 +49,7 @@
          <children>
             <Button fx:id="loginButton" layoutX="10.0" mnemonicParsing="false" onAction="#loginClient" prefWidth="60.0" text="Login" />
             <Button fx:id="registerButton" layoutX="70.0" mnemonicParsing="false" onAction="#registerClient" prefWidth="60.0" text="Register" />
-            <Button fx:id="cancelButton" layoutX="190.0" mnemonicParsing="false" onAction="#closeDialog" text="Cancel" />
+            <Button fx:id="cancelButton" layoutX="190.0" mnemonicParsing="false" onAction="#closeLoginDialog" text="Cancel" />
          </children>
       </Pane>
    </children>

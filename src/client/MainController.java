@@ -1,6 +1,8 @@
 package client;
 
+import common.FileInfo;
 import common.PropertiesManager;
+import common.Server;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,14 +12,21 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainController extends Controller{
+    private Client client;
     @FXML private LoginController loginController;
+    @FXML private FileTransferController fileTransferController;
 
     @FXML private TableView table;
     @FXML private TableController tableController;
@@ -42,6 +51,11 @@ public class MainController extends Controller{
         try {
             loadProperties();
             createLoginDialog();
+            fileTransferController = new FileTransferController();
+            client = new Client();
+            fileTransferController.setClient(client);
+            loginController.setClient(client);
+            loadSerializedRecords();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,6 +92,10 @@ public class MainController extends Controller{
         Stage stage = (Stage) addButton.getScene().getWindow();
         Optional<File> file = Optional.ofNullable(fileChooser.showOpenDialog(stage));
         file.ifPresent(f -> tableController.addRecord(new FileInfo(f)));
+
+        ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
+        fileTransferController.getClient().setFileList(records);
+        serializeRecords(records);
     }
 
     public void deleteFileFromTable(){
@@ -93,6 +111,40 @@ public class MainController extends Controller{
                     tableController.popSelectedRecord();
                 }
         }
+
+        ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
+        fileTransferController.getClient().setFileList(records);
+        serializeRecords(records);
+    }
+
+    private void loadSerializedRecords(){
+        try{
+            FileInputStream fileIn = new FileInputStream("fileinforecords.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+
+            @SuppressWarnings("unchecked")
+            List<FileInfo> list = (List<FileInfo>) in.readObject();
+            fileTransferController.getClient().setFileList(list);
+            tableController.setRecords(list);
+
+        } catch (FileNotFoundException fe) {
+            return;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeRecords(Serializable records){
+        try {
+            FileOutputStream fileOut = new FileOutputStream("fileinforecords.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(records);
+            out.close();
+            fileOut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void editServerIpProperty(){
@@ -111,12 +163,37 @@ public class MainController extends Controller{
         PropertiesManager.getInstance().setProperty("AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
     }
 
-    public void showLoginDialog() throws IOException {
-        loginController.showLoginDialog();
+    public void syncFiles() {
+        //tableController.syncFiles();
     }
 
-    public void signOut(){
-        loginController.signOut();
-        loginController.setUsernameInTitle();
+    public void showLoginDialog() {
+        try {
+            String serverIp = PropertiesManager.getInstance().getProperty("SERVER_IP");
+            int port = Integer.valueOf(PropertiesManager.getInstance().getProperty("PORT"));
+            initializeServerConnection(serverIp, port);
+            loginController.showLoginDialog();
+        } catch (NotBoundException | RemoteException e) {
+            new ErrorAlert(e.getMessage());
+        }
+    }
+
+    private void initializeServerConnection(String ip, int port) throws RemoteException, NotBoundException {
+        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\rsc\\client\\ClientTruststore");
+        //System.setProperty("javax.net.ssl.trustStorePassword", "CopyCat");
+
+        Registry registry = LocateRegistry.getRegistry(ip, port);//, new SslRMIClientSocketFactory());
+
+        Server server = (Server) registry.lookup("SERVER");
+
+        fileTransferController.setServer(server);
+        loginController.setServer(server);
+    }
+
+    public void signOut() {
+        client = new Client();
+        fileTransferController.setClient(client);
+        loginController.setClient(client);
+        new InfoAlert("Signed out.");
     }
 }
