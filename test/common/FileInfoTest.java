@@ -1,4 +1,4 @@
-package client;
+package common;
 
 import common.FileInfo;
 import org.junit.Test;

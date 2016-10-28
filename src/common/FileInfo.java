@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class FileInfo implements Serializable {
     static final long serialVersionUID = 1L;
@@ -35,6 +36,7 @@ public class FileInfo implements Serializable {
         size = in.readLong();
         lastModified = (Date) in.readObject();
         path = Paths.get((String) in.readObject());
+
     }
 
     public String getName() {
@@ -67,5 +69,20 @@ public class FileInfo implements Serializable {
 
     public Path getPath() {
         return path;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FileInfo fileInfo = (FileInfo) o;
+        return Objects.equals(name, fileInfo.name) &&
+                Objects.equals(size, fileInfo.size) &&
+                Objects.equals(lastModified, fileInfo.lastModified);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, size, lastModified);
     }
 }

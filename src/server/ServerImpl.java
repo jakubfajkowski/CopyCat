@@ -8,7 +8,9 @@ import server.services.AuthorizationServiceImpl;
 import common.ClientCredentials;
 import server.services.FileServiceImpl;
 
+import java.io.File;
 import java.io.IOException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -30,7 +32,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             fileService.setUsernameRootFolderName(clientCredentials.getUsername());
         }
 
-        System.out.println("login" + clientCredentials.getUsername() + isValid);
+        System.out.println("login " + clientCredentials.getUsername() + " " + isValid);
 
         return isValid;
     }
@@ -39,9 +41,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     public String register(ClientCredentials clientCredentials) throws RemoteException {
         String response = authorizationService.register(clientCredentials);
 
-        System.out.println("register" + clientCredentials.getUsername() + response);
+        System.out.println("register " + clientCredentials.getUsername() + " " + response);
 
         return response;
+    }
+
+    @Override
+    public boolean isModified(FileInfo fileInfo) throws RemoteException {
+        return fileService.isModified(fileInfo);
     }
 
     @Override
@@ -49,12 +56,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         fileService.sendFile(fileInfo, remoteInputStream);
     }
 
+    public FileInfo getFileInfo(FileInfo fileInfo) throws RemoteException {
+        return fileService.getFileInfo(fileInfo);
+    }
+
     @Override
-    public void getFile(FileInfo fileInfo, RemoteOutputStream remoteOutputStream) {
-        try {
-            fileService.getFile(fileInfo);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public RemoteInputStream getFile(FileInfo fileInfo) throws IOException  {
+        return fileService.getFile(fileInfo);
     }
 }

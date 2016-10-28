@@ -10,6 +10,7 @@ import common.Server;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,15 +22,15 @@ public class FileTransferController {
     private Client client;
     private Server server;
 
-
-    public void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
-        InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
-        Path target = fileInfo.getPath();
-
-        Files.copy(inputStream, target, REPLACE_EXISTING);
+    public void syncFiles() throws IOException {
+        for (FileInfo fileInfo: client.getFileList()) {
+            if (server.isModified(fileInfo)) {
+                server.sendFile(fileInfo, sendFile(fileInfo));
+            }
+        }
     }
 
-    public RemoteInputStream sendFile(FileInfo fileInfo) throws IOException {
+    private RemoteInputStream sendFile(FileInfo fileInfo) throws IOException {
         RemoteInputStreamServer remoteInputStreamServer = null;
         String path = fileInfo.getPath().toString();
 
@@ -42,6 +43,19 @@ public class FileTransferController {
         } finally {
             if(remoteInputStreamServer != null) remoteInputStreamServer.close();
         }
+    }
+
+    public void retrieveBackup(FileInfo fileInfo) throws IOException {
+        getFile(fileInfo, server.getFile(fileInfo));
+    }
+
+    private void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
+        InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
+        Path target = fileInfo.getPath();
+
+        Files.copy(inputStream, target, REPLACE_EXISTING);
+        Files.setLastModifiedTime(target, FileTime.fromMillis(server.getFileInfo(fileInfo).getLastModified().getTime()));
+        inputStream.close();
     }
 
     public Client getClient() {
