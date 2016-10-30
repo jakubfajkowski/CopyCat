@@ -20,15 +20,13 @@
          <Label text="Sync at:" />
          <TextField fx:id="syncTimeTextField" onAction="#editSyncTimeProperty" prefHeight="25.0" prefWidth="150.0" promptText="Sync time" />
          <ToggleButton fx:id="autoSyncButton" mnemonicParsing="false" onAction="#toggleAutoSyncProperty" prefHeight="25.0" prefWidth="150.0" text="Sync automatically" />
-         <Button fx:id="manualSyncButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="150.0" text="Sync manually" />
+         <Button fx:id="manualSyncButton" mnemonicParsing="false" onAction="#syncManually" prefHeight="25.0" prefWidth="150.0" text="Sync manually" />
          <Button fx:id="addButton" mnemonicParsing="false" onAction="#addFileToTable" prefHeight="25.0" prefWidth="150.0" text="Add" />
          <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteFileFromTable" prefHeight="25.0" prefWidth="150.0" text="Delete" />
-         <Button fx:id="retrieveButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="150.0" text="Retrieve backup" />
+         <Button fx:id="retrieveButton" mnemonicParsing="false" onAction="#retrieveBackup" prefHeight="25.0" prefWidth="150.0" text="Retrieve backup" />
          <VBox alignment="BOTTOM_LEFT" prefHeight="200.0" prefWidth="100.0">
-            <Button fx:id="loginMenuButton" mnemonicParsing="false" onAction="#showLoginDialog" prefHeight="25.0"
-                    prefWidth="150.0" text="Sign In/Register"/>
-            <Button fx:id="signOutButton" mnemonicParsing="false" onAction="#signOut" prefHeight="25.0"
-                    prefWidth="150.0" text="Sign Out"/>
+            <Button fx:id="loginMenuButton" mnemonicParsing="false" onAction="#showLoginDialog" prefHeight="25.0" prefWidth="150.0" text="Sign In/Register" />
+            <Button fx:id="signOutButton" mnemonicParsing="false" onAction="#signOut" prefHeight="25.0" prefWidth="150.0" text="Sign Out" />
          </VBox>
          <BorderPane.margin>
             <Insets />

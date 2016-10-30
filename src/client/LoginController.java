@@ -57,20 +57,21 @@ public class LoginController extends Controller {
         loginDialogStage.showAndWait();
     }
 
-    public void closeLoginDialog(ActionEvent actionEvent) {
+    public void closeLoginDialog() {
         loginDialogStage.close();
     }
 
-    public void loginClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
+    public void loginClient() throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
         client.setClientCredentials(clientCredentials);
         boolean response = server.login(client.getClientCredentials());
 
         new InfoAlert(processLoginResponse(response));
 
-        if (response)
+        if (response){
             setUsernameInTitle();
             loginDialogStage.close();
+        }
     }
 
     private String processLoginResponse(boolean response) {
@@ -84,13 +85,13 @@ public class LoginController extends Controller {
     }
 
     public void setUsernameInTitle() {
-        if (client != null)
+        if (client.getClientCredentials() != null)
             Main.primaryStage.setTitle("CopyCat (" + client.getClientCredentials().getUsername() + ")");
         else
-            Main.primaryStage.setTitle("CopyCat");
+            Main.primaryStage.setTitle("CopyCat (public)");
     }
 
-    public void registerClient(ActionEvent actionEvent) throws RemoteException, NotBoundException {
+    public void registerClient() throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
         client.setClientCredentials(clientCredentials);
         String response = server.register(client.getClientCredentials());
@@ -103,6 +104,14 @@ public class LoginController extends Controller {
                password = passwordField.getText();
 
         return new ClientCredentials(username, password);
+    }
+
+    public void signOut() {
+        try {
+            server.signOut();
+        } catch (RemoteException e) {
+            new ErrorAlert("Unable to sign out.");
+        }
     }
 
     public void setLoginDialogStage(Stage loginDialogStage) {

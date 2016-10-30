@@ -19,6 +19,7 @@ import java.rmi.server.UnicastRemoteObject;
 public class ServerImpl extends UnicastRemoteObject implements Server {
     private AuthorizationServiceImpl authorizationService = new AuthorizationServiceImpl();
     private FileServiceImpl fileService = new FileServiceImpl();
+    private String clientUsername = "public";
 
     public ServerImpl(int port) throws RemoteException {
         super(port);
@@ -29,12 +30,20 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         boolean isValid = authorizationService.login(clientCredentials);
 
         if (isValid) {
-            fileService.setUsernameRootFolderName(clientCredentials.getUsername());
+            clientUsername = clientCredentials.getUsername();
+            fileService.setUsernameRootFolderName(clientUsername);
         }
 
         System.out.println("login " + clientCredentials.getUsername() + " " + isValid);
 
         return isValid;
+    }
+
+    @Override
+    public void signOut() throws RemoteException {
+        System.out.println("signOut " + clientUsername);
+        clientUsername = "public";
+        fileService.setUsernameRootFolderName(clientUsername);
     }
 
     @Override
@@ -48,20 +57,25 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     @Override
     public boolean isModified(FileInfo fileInfo) throws RemoteException {
-        return fileService.isModified(fileInfo);
+        boolean isModified = fileService.isModified(fileInfo);
+        System.out.println("isModified " + fileInfo.getName() + " " + isModified);
+        return isModified;
     }
 
     @Override
     public void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws RemoteException {
+        System.out.println("sendFile " + fileInfo.getName());
         fileService.sendFile(fileInfo, remoteInputStream);
     }
 
     public FileInfo getFileInfo(FileInfo fileInfo) throws RemoteException {
+        System.out.println("getFileInfo " + fileInfo.getName());
         return fileService.getFileInfo(fileInfo);
     }
 
     @Override
     public RemoteInputStream getFile(FileInfo fileInfo) throws IOException  {
+        System.out.println("getFile " + fileInfo.getName());
         return fileService.getFile(fileInfo);
     }
 }

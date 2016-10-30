@@ -46,7 +46,9 @@ public class FileTransferController {
     }
 
     public void retrieveBackup(FileInfo fileInfo) throws IOException {
-        getFile(fileInfo, server.getFile(fileInfo));
+        if (server.isModified(fileInfo)) {
+            getFile(fileInfo, server.getFile(fileInfo));
+        }
     }
 
     private void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {

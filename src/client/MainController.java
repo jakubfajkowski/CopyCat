@@ -49,27 +49,39 @@ public class MainController extends Controller{
         super.initialize(location, resources);
 
         try {
-            loadProperties();
             createLoginDialog();
             fileTransferController = new FileTransferController();
             client = new Client();
             fileTransferController.setClient(client);
             loginController.setClient(client);
             loadSerializedRecords();
+            loadProperties();
+            startServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loadProperties() throws IOException {
+    private void loadProperties() {
+        String username = getClientUsername();
+
         PropertiesManager pm = PropertiesManager.getInstance();
         pm.setFileName("config");
         pm.load();
 
-        serverIpTextField.setText(pm.getProperty("SERVER_IP"));
-        portTextField.setText(pm.getProperty("PORT"));
-        syncTimeTextField.setText(pm.getProperty("SYNC_TIME"));
-        autoSyncButton.setSelected(Boolean.valueOf(pm.getProperty("AUTO_SYNC")));
+        serverIpTextField.setText(pm.getProperty(username + "SERVER_IP"));
+        portTextField.setText(pm.getProperty(username + "PORT"));
+        syncTimeTextField.setText(pm.getProperty(username + "SYNC_TIME"));
+        autoSyncButton.setSelected(Boolean.valueOf(pm.getProperty(username + "AUTO_SYNC")));
+    }
+
+    private String getClientUsername() {
+        if(client.getClientCredentials() != null) {
+            return client.getClientCredentials().getUsername();
+        }
+        else
+            return "";
+
     }
 
     private void createLoginDialog() throws IOException {
@@ -99,44 +111,59 @@ public class MainController extends Controller{
     }
 
     public void deleteFileFromTable(){
-        if (tableController.getSelectedFileRecord() != null){
+        try {
+            FileInfo fileInfo = tableController.getSelectedFileRecord();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Delete file");
-            alert.setHeaderText("Are you sure you want to delete file: " + tableController.getSelectedFileRecord().getName() + "?");
+            alert.setHeaderText("Are you sure you want to delete file: " + fileInfo.getName() + "?");
             alert.setContentText("All backup data will be lost.");
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent())
-                if (result.get() == ButtonType.OK){
+                if (result.get() == ButtonType.OK) {
                     tableController.popSelectedRecord();
                 }
-        }
 
-        ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
-        fileTransferController.getClient().setFileList(records);
-        serializeRecords(records);
+            ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
+            fileTransferController.getClient().setFileList(records);
+            serializeRecords(records);
+        }
+        catch (NullPointerException e) {
+            new InfoAlert("No selected file.");
+        }
     }
 
-    private void loadSerializedRecords(){
-        try{
-            FileInputStream fileIn = new FileInputStream("fileinforecords.ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
+    private void loadSerializedRecords() {
+        try {
+            String fileName = getClientUsername() + "fileinforecords.ser";
+            ObjectInputStream in;
+            FileInputStream fileIn = null;
+
+            try{
+                fileIn = new FileInputStream(fileName);
+
+            } catch (FileNotFoundException fe) {
+                serializeRecords(new ArrayList<FileInfo>());
+                fileIn = new FileInputStream(fileName);
+            }
+
+            in = new ObjectInputStream(fileIn);
 
             @SuppressWarnings("unchecked")
             List<FileInfo> list = (List<FileInfo>) in.readObject();
             fileTransferController.getClient().setFileList(list);
             tableController.setRecords(list);
-
-        } catch (FileNotFoundException fe) {
-            return;
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            fileIn.close();
+            in.close();
+        }
+        catch (IOException | ClassNotFoundException e) {
+            new ErrorAlert(e.getMessage());
         }
     }
 
     private void serializeRecords(Serializable records){
         try {
-            FileOutputStream fileOut = new FileOutputStream("fileinforecords.ser");
+            FileOutputStream fileOut = new FileOutputStream(getClientUsername() + "fileinforecords.ser");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(records);
             out.close();
@@ -149,32 +176,58 @@ public class MainController extends Controller{
 
     public void editServerIpProperty(){
         PropertiesManager.getInstance().setProperty("SERVER_IP", serverIpTextField.getText());
+        startServer();
     }
 
     public void editPortProperty(){
         PropertiesManager.getInstance().setProperty("PORT", portTextField.getText());
+        startServer();
     }
 
     public void editSyncTimeProperty(){
-        PropertiesManager.getInstance().setProperty("SYNC_TIME", syncTimeTextField.getText());
+        PropertiesManager.getInstance().setProperty(getClientUsername() + "SYNC_TIME", syncTimeTextField.getText());
     }
 
     public void toggleAutoSyncProperty(){
-        PropertiesManager.getInstance().setProperty("AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
+        PropertiesManager.getInstance().setProperty(getClientUsername() + "AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
     }
 
-    public void syncFiles() {
-        //tableController.syncFiles();
+    public void syncManually() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fileTransferController.syncFiles();
+                }
+                catch (IOException e) {
+                        new ErrorAlert(e.getMessage());
+                    }
+            }
+        }).start();
+    }
+
+    public void retrieveBackup() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fileTransferController.retrieveBackup(tableController.getSelectedFileRecord());
+                }
+                catch (IOException e) {
+                    new ErrorAlert(e.getMessage());
+                }
+                catch (NullPointerException e) {
+                    new InfoAlert("No selected file.");
+                }
+            }
+        }).start();
     }
 
     public void showLoginDialog() {
-        try {
-            String serverIp = PropertiesManager.getInstance().getProperty("SERVER_IP");
-            int port = Integer.valueOf(PropertiesManager.getInstance().getProperty("PORT"));
-            initializeServerConnection(serverIp, port);
+        if(startServer()) {
             loginController.showLoginDialog();
-        } catch (NotBoundException | RemoteException e) {
-            new ErrorAlert(e.getMessage());
+            loadProperties();
+            loadSerializedRecords();
         }
     }
 
@@ -190,10 +243,26 @@ public class MainController extends Controller{
         loginController.setServer(server);
     }
 
+    private boolean startServer() {
+        String serverIp = PropertiesManager.getInstance().getProperty("SERVER_IP");
+        int port = Integer.valueOf(PropertiesManager.getInstance().getProperty("PORT"));
+        try {
+            initializeServerConnection(serverIp, port);
+            return true;
+        } catch (RemoteException | NotBoundException e) {
+            new ErrorAlert("Could not establish server connection.");
+            return false;
+        }
+    }
+
     public void signOut() {
         client = new Client();
         fileTransferController.setClient(client);
         loginController.setClient(client);
+        loadProperties();
+        loadSerializedRecords();
+        loginController.setUsernameInTitle();
+        loginController.signOut();
         new InfoAlert("Signed out.");
     }
 }

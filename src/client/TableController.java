@@ -70,7 +70,9 @@ public class TableController extends Controller {
     }
 
     public void setRecords(List<FileInfo> records) {
-        this.records.setAll(records);
+        this.records = FXCollections.observableArrayList(records);
+        table.setItems(this.records);
+        table.refresh();
     }
 
 }
