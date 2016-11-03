@@ -4,5 +4,5 @@ import common.ClientCredentials;
 
 public interface AuthorizationService {
     boolean login(ClientCredentials clientCredentials);
-    String register(ClientCredentials clientCredentials);
+    boolean register(ClientCredentials clientCredentials);
 }

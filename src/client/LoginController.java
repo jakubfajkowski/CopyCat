@@ -2,22 +2,14 @@ package client;
 
 import common.ClientCredentials;
 import common.Server;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -94,9 +86,17 @@ public class LoginController extends Controller {
     public void registerClient() throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
         client.setClientCredentials(clientCredentials);
-        String response = server.register(client.getClientCredentials());
+        boolean response = server.register(client.getClientCredentials());
 
-        new InfoAlert(response);
+        String responseMessage;
+        if(response) {
+            responseMessage = "Registration successful.";
+        }
+        else {
+            responseMessage = "Username already taken.";
+        }
+
+        new InfoAlert(responseMessage);
     }
 
     private ClientCredentials collectClientCredentials(){

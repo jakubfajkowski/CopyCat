@@ -19,36 +19,26 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String username = clientCredentials.getUsername();
         byte[] hashPassword = clientCredentials.getHashPassword();
 
-        if(isAlreadyUsed(username))
-            return propertiesManager.getProperty(username).equals(new String(hashPassword));
-        else
-            return false;
+        return isUsed(username) && propertiesManager.getProperty(username).equals(new String(hashPassword));
     }
 
     @Override
-    public String register(ClientCredentials clientCredentials) {
-        String serviceCommunicate;
-
-        if(addNewCredentialsToPropertiesFile(clientCredentials))
-            serviceCommunicate = "User successfully registered";
-        else
-            serviceCommunicate = "Login is already taken";
-
-        return serviceCommunicate;
+    public boolean register(ClientCredentials clientCredentials) {
+        return addNewCredentialsToPropertiesFile(clientCredentials);
     }
 
     private boolean addNewCredentialsToPropertiesFile(ClientCredentials clientCredentials) {
         String username = clientCredentials.getUsername();
         byte[] hashPassword = clientCredentials.getHashPassword();
 
-        if(!isAlreadyUsed(username)){
+        if(!isUsed(username)){
             propertiesManager.setProperty(username, new String(hashPassword));
             return true;
         }else
             return false;
     }
 
-    private boolean isAlreadyUsed(String login) {
+    private boolean isUsed(String login) {
         return propertiesManager.getProperty(login) != null;
     }
 }

@@ -1,19 +1,14 @@
 package server;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteOutputStream;
 import common.FileInfo;
 import common.Server;
 import server.services.AuthorizationServiceImpl;
 import common.ClientCredentials;
 import server.services.FileServiceImpl;
 
-import java.io.File;
 import java.io.IOException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
@@ -47,8 +42,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public String register(ClientCredentials clientCredentials) throws RemoteException {
-        String response = authorizationService.register(clientCredentials);
+    public boolean register(ClientCredentials clientCredentials) throws RemoteException {
+        boolean response = authorizationService.register(clientCredentials);
 
         System.out.println("register " + clientCredentials.getUsername() + " " + response);
 
