@@ -6,6 +6,7 @@ import client.alert.InfoAlert;
 import common.FileInfo;
 import common.PropertiesManager;
 import common.Server;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -55,7 +56,6 @@ public class MainController extends Controller {
             createLoginDialog();
             fileTransferController = new FileTransferController();
             client = new Client();
-            fileTransferController.setClient(client);
             loginController.setClient(client);
             loadSerializedRecords();
             loadProperties();
@@ -109,7 +109,7 @@ public class MainController extends Controller {
         file.ifPresent(f -> tableController.addRecord(new FileInfo(f)));
 
         ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
-        fileTransferController.getClient().setFileList(records);
+        client.setFileList(records);
         serializeRecords(records);
     }
 
@@ -128,7 +128,7 @@ public class MainController extends Controller {
                 }
 
             ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
-            fileTransferController.getClient().setFileList(records);
+            client.setFileList(records);
             serializeRecords(records);
         }
         catch (NullPointerException e) {
@@ -154,7 +154,7 @@ public class MainController extends Controller {
 
             @SuppressWarnings("unchecked")
             List<FileInfo> list = (List<FileInfo>) in.readObject();
-            fileTransferController.getClient().setFileList(list);
+            client.setFileList(list);
             tableController.setRecords(list);
             fileIn.close();
             in.close();
@@ -196,17 +196,22 @@ public class MainController extends Controller {
     }
 
     public void syncManually() {
-        new Thread(new Runnable() {
+        Task<Void> task = new Task<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 try {
-                    fileTransferController.syncFiles();
+                    fileTransferController.syncFiles(client.getFileList());
                 }
                 catch (IOException e) {
-                        new ErrorAlert(e.getMessage());
-                    }
+                    new ErrorAlert(e.getMessage());
+                }
+                return null ;
             }
-        }).start();
+        };
+
+        task.setOnSucceeded(event -> new InfoAlert("Done."));
+
+        new Thread(task).start();
     }
 
     public void retrieveBackup() {
@@ -260,7 +265,6 @@ public class MainController extends Controller {
 
     public void signOut() {
         client = new Client();
-        fileTransferController.setClient(client);
         loginController.setClient(client);
         loadProperties();
         loadSerializedRecords();

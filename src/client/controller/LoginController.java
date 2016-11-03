@@ -66,6 +66,7 @@ public class LoginController extends Controller {
         new InfoAlert(processLoginResponse(response));
 
         if (response){
+            client.setLoggedIn(true);
             setUsernameInTitle();
             loginDialogStage.close();
         }
@@ -85,7 +86,7 @@ public class LoginController extends Controller {
         if (client.getClientCredentials() != null)
             Main.primaryStage.setTitle("CopyCat (" + client.getClientCredentials().getUsername() + ")");
         else
-            Main.primaryStage.setTitle("CopyCat (public)");
+            Main.primaryStage.setTitle("CopyCat");
     }
 
     public void registerClient() throws RemoteException, NotBoundException {
@@ -93,15 +94,17 @@ public class LoginController extends Controller {
         client.setClientCredentials(clientCredentials);
         boolean response = server.register(client.getClientCredentials());
 
-        String responseMessage;
-        if(response) {
-            responseMessage = "Registration successful.";
-        }
-        else {
-            responseMessage = "Username already taken.";
-        }
+        new InfoAlert(processRegisterResponse(response));
+    }
 
-        new InfoAlert(responseMessage);
+    private String processRegisterResponse(boolean response) {
+        String communicate;
+        if (response)
+            communicate = "Registration successful.";
+        else
+            communicate = "Username already taken.";
+
+        return communicate;
     }
 
     private ClientCredentials collectClientCredentials(){

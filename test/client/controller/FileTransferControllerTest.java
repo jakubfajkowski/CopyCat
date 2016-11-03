@@ -1,5 +1,6 @@
-package client;
+package client.controller;
 
+import client.Client;
 import client.controller.FileTransferController;
 import common.ClientCredentials;
 import common.FileInfo;
@@ -44,13 +45,12 @@ public class FileTransferControllerTest {
         Server server = initializeServerConnection("localhost", Registry.REGISTRY_PORT);
 
         FileTransferController fileTransferController = new FileTransferController();
-        fileTransferController.setClient(client);
         fileTransferController.setServer(server);
 
         server.register(clientCredentials);
         server.login(clientCredentials);
 
-        fileTransferController.syncFiles();
+        fileTransferController.syncFiles(client.getFileList());
 
         for (FileInfo fileInfo: fileInfos) {
             assertTrue(fileInfo.equals(new FileInfo(new File(getServerFilePath(fileInfo.getPath()).toString()))));
@@ -78,13 +78,12 @@ public class FileTransferControllerTest {
         Server server = initializeServerConnection("localhost", Registry.REGISTRY_PORT);
 
         FileTransferController fileTransferController = new FileTransferController();
-        fileTransferController.setClient(client);
         fileTransferController.setServer(server);
 
         server.register(clientCredentials);
         server.login(clientCredentials);
 
-        fileTransferController.syncFiles();
+        fileTransferController.syncFiles(client.getFileList());
 
         for (FileInfo fileInfo: fileInfos) {
             fileTransferController.retrieveBackup(fileInfo);

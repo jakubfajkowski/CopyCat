@@ -15,7 +15,7 @@ import java.nio.file.attribute.FileTime;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileServiceImpl implements FileService {
-    private String usernameRootFolderName = "public";
+    private String usernameRootFolderName;
 
     @Override
     public boolean isModified(FileInfo fileInfo) {

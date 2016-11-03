@@ -34,6 +34,6 @@
       </VBox>
    </right>
     <center>
-       <fx:include fx:id="table" source="tableView.fxml" />
+       <fx:include fx:id="table" source="controller/tableView.fxml" />
     </center>
 </BorderPane>
