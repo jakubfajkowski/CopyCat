@@ -1,4 +1,4 @@
-package client;/*
+package client.controller;/*
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
@@ -12,6 +12,8 @@ import java.net.URL;
 
 */
 
+import client.Main;
+import client.controller.Controller;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
@@ -23,11 +25,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-
-/**
- * Created by FajQa on 21.10.2016.
- */
-
 public class SystemTrayController extends Controller {
     private TrayIcon trayIcon;
 

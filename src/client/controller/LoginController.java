@@ -1,5 +1,10 @@
-package client;
+package client.controller;
 
+import client.Client;
+import client.Main;
+import client.alert.ErrorAlert;
+import client.alert.InfoAlert;
+import client.controller.Controller;
 import common.ClientCredentials;
 import common.Server;
 import javafx.beans.value.ChangeListener;

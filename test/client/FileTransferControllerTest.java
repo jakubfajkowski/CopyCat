@@ -1,16 +1,14 @@
 package client;
 
+import client.controller.FileTransferController;
 import common.ClientCredentials;
 import common.FileInfo;
 import common.Server;
-import javafx.event.ActionEvent;
 import org.junit.Test;
-import server.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.NotBoundException;

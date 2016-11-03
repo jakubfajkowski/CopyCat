@@ -1,10 +1,10 @@
-package client;
+package client.alert;
 
 import javafx.scene.control.Alert;
 
-public class ErrorAlert extends Alert {
-    public ErrorAlert(String message){
-        super(Alert.AlertType.ERROR);
+public class InfoAlert extends Alert{
+    public InfoAlert(String message){
+        super(AlertType.INFORMATION);
         setTitle("CopyCat");
         setHeaderText("");
         setContentText(message);

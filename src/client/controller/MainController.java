@@ -1,5 +1,8 @@
-package client;
+package client.controller;
 
+import client.Client;
+import client.alert.ErrorAlert;
+import client.alert.InfoAlert;
 import common.FileInfo;
 import common.PropertiesManager;
 import common.Server;
@@ -23,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class MainController extends Controller{
+public class MainController extends Controller {
     private Client client;
     @FXML private LoginController loginController;
     @FXML private FileTransferController fileTransferController;

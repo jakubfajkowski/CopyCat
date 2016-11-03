@@ -1,5 +1,6 @@
-package client;
+package client.controller;
 
+import client.Client;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
