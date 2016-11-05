@@ -61,7 +61,9 @@ public class LoginController extends Controller {
     public void loginClient() throws RemoteException, NotBoundException {
         ClientCredentials clientCredentials = collectClientCredentials();
         client.setClientCredentials(clientCredentials);
-        boolean response = server.login(client.getClientCredentials());
+        client.setRemoteSession(server.login(client.getClientCredentials()));
+
+        boolean response = client.getRemoteSession() != null;
 
         new InfoAlert(processLoginResponse(response));
 
@@ -116,7 +118,7 @@ public class LoginController extends Controller {
 
     public void signOut() {
         try {
-            server.signOut();
+            client.getRemoteSession().signOut();
         } catch (RemoteException e) {
             new ErrorAlert("Unable to sign out.");
         }

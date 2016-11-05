@@ -247,7 +247,6 @@ public class MainController extends Controller {
 
         Server server = (Server) registry.lookup("SERVER");
 
-        fileTransferController.setServer(server);
         loginController.setServer(server);
     }
 
@@ -264,12 +263,12 @@ public class MainController extends Controller {
     }
 
     public void signOut() {
+        loginController.signOut();
         client = new Client();
         loginController.setClient(client);
         loadProperties();
         loadSerializedRecords();
         loginController.setUsernameInTitle();
-        loginController.signOut();
         new InfoAlert("Signed out.");
     }
 }

@@ -4,6 +4,7 @@ import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
+import common.ClientCredentials;
 import common.FileInfo;
 
 import java.io.*;
@@ -16,6 +17,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileServiceImpl implements FileService {
     private String usernameRootFolderName;
+
+    public FileServiceImpl(String username) {
+        usernameRootFolderName = username;
+    }
 
     @Override
     public boolean isModified(FileInfo fileInfo) {

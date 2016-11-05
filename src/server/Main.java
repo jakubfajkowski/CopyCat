@@ -14,7 +14,7 @@ public class Main{
         //System.setProperty("javax.net.ssl.keyStorePassword", "CopyCat");
 
         try{
-            Server stub = new ServerImpl(0);//, new SslRMIClientSocketFactory(), new SslRMIServerSocketFactory());
+            Server stub = new ServerImpl();//, new SslRMIClientSocketFactory(), new SslRMIServerSocketFactory());
             LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
             Registry registry = LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
             registry.rebind("SERVER", stub);

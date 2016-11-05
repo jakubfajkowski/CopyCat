@@ -18,11 +18,9 @@ public class FileServiceImplTest {
 
     @Test
     public void isModified_notModifiedFile() throws Exception {
-        FileServiceImpl fileService = new FileServiceImpl();
-
         usernameRootFolderName = "test_rsc/server/services";
 
-        fileService.setUsernameRootFolderName(usernameRootFolderName);
+        FileServiceImpl fileService = new FileServiceImpl(usernameRootFolderName);
 
         FileInfo fileInfo = new FileInfo(new File(getClass().getResource("isModifiedTestFile_NOTMODIFIED.txt").toURI()));
         Path path = fileInfo.getPath();
@@ -38,11 +36,9 @@ public class FileServiceImplTest {
 
     @Test
     public void isModified_ModifiedFile() throws Exception {
-        FileServiceImpl fileService = new FileServiceImpl();
-
         usernameRootFolderName = "test_rsc/server/services";
 
-        fileService.setUsernameRootFolderName(usernameRootFolderName);
+        FileServiceImpl fileService = new FileServiceImpl(usernameRootFolderName);
 
         FileInfo fileInfo = new FileInfo(new File(getClass().getResource("isModifiedTestFile_MODIFIED.txt").toURI()));
         Path path = fileInfo.getPath();

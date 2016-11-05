@@ -5,6 +5,7 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
 import common.FileInfo;
+import common.RemoteSession;
 import common.Server;
 
 import java.io.BufferedInputStream;
@@ -19,12 +20,12 @@ import java.util.List;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileTransferController {
-    private Server server;
+    private RemoteSession remoteSession;
 
     public void syncFiles(List<FileInfo> fileInfoList) throws IOException {
         for (FileInfo fileInfo: fileInfoList) {
-            if (server.isModified(fileInfo)) {
-                server.sendFile(fileInfo, sendFile(fileInfo));
+            if (remoteSession.isModified(fileInfo)) {
+                remoteSession.sendFile(fileInfo, sendFile(fileInfo));
             }
         }
     }
@@ -45,8 +46,8 @@ public class FileTransferController {
     }
 
     public void retrieveBackup(FileInfo fileInfo) throws IOException {
-        if (server.isModified(fileInfo)) {
-            getFile(fileInfo, server.getFile(fileInfo));
+        if (remoteSession.isModified(fileInfo)) {
+            getFile(fileInfo, remoteSession.getFile(fileInfo));
         }
     }
 
@@ -55,15 +56,15 @@ public class FileTransferController {
         Path target = fileInfo.getPath();
 
         Files.copy(inputStream, target, REPLACE_EXISTING);
-        Files.setLastModifiedTime(target, FileTime.fromMillis(server.getFileInfo(fileInfo).getLastModified().getTime()));
+        Files.setLastModifiedTime(target, FileTime.fromMillis(remoteSession.getFileInfo(fileInfo).getLastModified().getTime()));
         inputStream.close();
     }
 
-    public Server getServer() {
-        return server;
+    public RemoteSession getRemoteSession() {
+        return remoteSession;
     }
 
-    public void setServer(Server server) {
-        this.server = server;
+    public void setRemoteSession(RemoteSession remoteSession) {
+        this.remoteSession = remoteSession;
     }
 }

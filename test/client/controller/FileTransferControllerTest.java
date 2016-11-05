@@ -1,9 +1,9 @@
 package client.controller;
 
 import client.Client;
-import client.controller.FileTransferController;
 import common.ClientCredentials;
 import common.FileInfo;
+import common.RemoteSession;
 import common.Server;
 import org.junit.Test;
 
@@ -43,9 +43,11 @@ public class FileTransferControllerTest {
         client.setFileList(fileInfos);
 
         Server server = initializeServerConnection("localhost", Registry.REGISTRY_PORT);
+        server.register(clientCredentials);
+        RemoteSession remoteSession = server.login(clientCredentials);
 
         FileTransferController fileTransferController = new FileTransferController();
-        fileTransferController.setServer(server);
+        fileTransferController.setRemoteSession(remoteSession);
 
         server.register(clientCredentials);
         server.login(clientCredentials);
@@ -76,9 +78,11 @@ public class FileTransferControllerTest {
         client.setFileList(fileInfos);
 
         Server server = initializeServerConnection("localhost", Registry.REGISTRY_PORT);
+        server.register(clientCredentials);
+        RemoteSession remoteSession = server.login(clientCredentials);
 
         FileTransferController fileTransferController = new FileTransferController();
-        fileTransferController.setServer(server);
+        fileTransferController.setRemoteSession(remoteSession);
 
         server.register(clientCredentials);
         server.login(clientCredentials);
