@@ -4,12 +4,13 @@ import common.ClientCredentials;
 import common.FileInfo;
 import common.RemoteSession;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Client {
     private RemoteSession remoteSession;
     private ClientCredentials clientCredentials;
-    private List<FileInfo> fileList;
+    private List<FileInfo> fileList = new ArrayList<>();
     private boolean loggedIn = false;
 
     public ClientCredentials getClientCredentials() {

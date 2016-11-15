@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.alert.InfoAlert;
 import common.FileInfo;
 
 import javafx.collections.FXCollections;
@@ -11,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -18,7 +20,6 @@ import java.util.ResourceBundle;
 public class TableController extends Controller {
     @FXML private TableView<FileInfo> table;
     @FXML private TableColumn<FileInfo, String> name;
-    @FXML private TableColumn<FileInfo, Boolean> actual;
     @FXML private TableColumn<FileInfo, Long> size;
     @FXML private TableColumn<FileInfo, String> extension;
     @FXML private TableColumn<FileInfo, Date> lastModified;
@@ -31,7 +32,6 @@ public class TableController extends Controller {
         super.initialize(location, resources);
 
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
-        actual.setCellValueFactory(new PropertyValueFactory<>("actual"));
         size.setCellValueFactory(new PropertyValueFactory<>("size"));
         size.setCellFactory(c -> new TableCell<FileInfo, Long>() {
 
@@ -56,6 +56,7 @@ public class TableController extends Controller {
 
     private void setRowsStyle() {
         table.setRowFactory(row -> new TableRow<FileInfo>(){
+
             @Override
             public void updateItem(FileInfo item, boolean empty){
                 super.updateItem(item, empty);
@@ -63,7 +64,6 @@ public class TableController extends Controller {
                 if (item == null || empty) {
                     setStyle("");
                 } else {
-
                     if (!item.isBackuped()) {
                         setSingleRowStyle(getChildren(), Color.RED);
                     } else {
@@ -86,7 +86,10 @@ public class TableController extends Controller {
     }
 
     void addRecord(FileInfo fileInfo){
-        records.add(fileInfo);
+        if (!records.contains(fileInfo))
+            records.add(fileInfo);
+        else
+            new InfoAlert(fileInfo.getPath().toString() + " is already added.");
     }
 
     void popSelectedRecord(){
@@ -102,9 +105,14 @@ public class TableController extends Controller {
         return records;
     }
 
+    public void paintRecords() {
+        List<FileInfo> list = new ArrayList<>(this.records);
+        this.records.clear();
+        this.records.addAll(list);
+    }
+
     void setRecords(List<FileInfo> records) {
-        this.records = FXCollections.observableArrayList(records);
-        table.setItems(this.records);
-        table.refresh();
+        this.records.clear();
+        this.records.addAll(records);
     }
 }

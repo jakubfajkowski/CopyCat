@@ -23,9 +23,12 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean isModified(FileInfo fileInfo) {
+    public boolean isModified(FileInfo fileInfo) throws FileNotFoundException {
         Path serverFilePath = getServerFilePath(fileInfo.getPath());
-        FileInfo serverFileInfo = new FileInfo(serverFilePath.toFile());
+        File serverFile = serverFilePath.toFile();
+        if (!serverFile.exists())
+            throw new FileNotFoundException();
+        FileInfo serverFileInfo = new FileInfo(serverFile);
 
         return !serverFileInfo.equals(fileInfo);
     }
@@ -41,7 +44,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) {
+    public boolean sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) {
         Path target = getServerFilePath(fileInfo.getPath());
 
         try (InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream)){
@@ -49,10 +52,12 @@ public class FileServiceImpl implements FileService {
             Files.copy(inputStream, target, REPLACE_EXISTING);
             Files.setLastModifiedTime(target, FileTime.fromMillis(fileInfo.getLastModified().getTime()));
             System.out.println(target.toString() + " DONE");
+            return true;
         }
         catch (IOException e) {
             System.out.println(target.toString() + " ABORTED");
             deleteFile(fileInfo);
+            return false;
         }
     }
 
@@ -86,9 +91,5 @@ public class FileServiceImpl implements FileService {
         } finally {
             if(remoteInputStreamServer != null) remoteInputStreamServer.close();
         }
-    }
-
-    public void setUsernameRootFolderName(String usernameRootFolderName) {
-        this.usernameRootFolderName = usernameRootFolderName;
     }
 }

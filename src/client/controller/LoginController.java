@@ -55,6 +55,7 @@ public class LoginController extends Controller {
     }
 
     public void closeLoginDialog() {
+        usernameTextField.clear();
         passwordField.clear();
         loginDialogStage.close();
     }

@@ -1,13 +1,13 @@
 package client.controller;
 
 import client.Client;
-import client.alert.CopyAlert;
+import client.Main;
+import client.Refresh;
 import client.alert.ErrorAlert;
 import client.alert.InfoAlert;
 import common.FileInfo;
 import common.PropertiesManager;
 import common.Server;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -31,11 +31,11 @@ import java.util.concurrent.TimeUnit;
 
 public class MainController extends Controller {
     private Client client;
-    private Timer timer;
+    private Timer syncTimer;
+    private Timer checkTimer;
+
     @FXML private LoginController loginController;
     @FXML private FileTransferController fileTransferController;
-
-    @FXML private TableView table;
     @FXML private TableController tableController;
 
     @FXML private TextField serverIpTextField;
@@ -56,20 +56,63 @@ public class MainController extends Controller {
         super.initialize(location, resources);
 
         try {
+            Refresh.getInstance().setMainController(this);
+            Main.primaryStage.setOnCloseRequest(event -> {
+                cancelTimers();
+                System.exit(0);
+            });
             createLoginDialog();
-            fileTransferController = new FileTransferController();
-            client = new Client();
-            loginController.setClient(client);
-            setDisableControls(true);
-            loadProperties();
-            if(autoSyncButton.isSelected()) setTimerTask();
+            setDefaultClient();
             startServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void setTimerTask() {
+    private void cancelTimers() {
+        if (syncTimer != null) syncTimer.cancel();
+        if (checkTimer != null) checkTimer.cancel();
+    }
+
+    private void createLoginDialog() throws IOException {
+        Stage loginDialogStage = new Stage();
+        loginDialogStage.initModality(Modality.WINDOW_MODAL);
+        loginDialogStage.setTitle("Login");
+        loginDialogStage.setResizable(false);
+        loginDialogStage.setOnCloseRequest(event -> loginDialogStage.close());
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("loginView.fxml"));
+        Parent loginParent = loader.load();
+        loginController = loader.getController();
+        Scene scene = new Scene(loginParent, 250, 110);
+        loginDialogStage.setScene(scene);
+        loginController.setLoginDialogStage(loginDialogStage);
+    }
+
+    private boolean startServer() {
+        String serverIp = PropertiesManager.getInstance().getProperty("SERVER_IP");
+        int port = Integer.valueOf(PropertiesManager.getInstance().getProperty("PORT"));
+        try {
+            initializeServerConnection(serverIp, port);
+            return true;
+        } catch (RemoteException | NotBoundException e) {
+            new ErrorAlert("Server " + serverIp + ":" + port + "is unreachable.");
+            return false;
+        }
+    }
+
+    private void initializeServerConnection(String ip, int port) throws RemoteException, NotBoundException {
+        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\rsc\\client\\ClientTruststore");
+        //System.setProperty("javax.net.ssl.trustStorePassword", "CopyCat");
+
+        Registry registry = LocateRegistry.getRegistry(ip, port);//, new SslRMIClientSocketFactory());
+
+        Server server = (Server) registry.lookup("SERVER");
+
+        loginController.setServer(server);
+    }
+
+    private void setSyncTimerTask() {
+        syncTimer = new Timer();
         DateFormat sdf = new SimpleDateFormat("HH:mm");
         try {
             Date date = sdf.parse(syncTimeTextField.getText());
@@ -80,14 +123,21 @@ public class MainController extends Controller {
                 }
             };
 
-            timer = new Timer();
-            timer.schedule(timerTask, date, TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
+            syncTimer.schedule(timerTask, date, TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
         } catch (ParseException e) {
             new ErrorAlert("Cannot resolve sync time.");
         }
+    }
 
-
-
+    private void setCheckTimerTask() {
+        checkTimer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                Refresh.getInstance().refreshAll();
+            }
+        };
+        checkTimer.schedule(timerTask, new Date(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
     }
 
     private void loadProperties() {
@@ -112,20 +162,6 @@ public class MainController extends Controller {
 
     }
 
-    private void createLoginDialog() throws IOException {
-        Stage loginDialogStage = new Stage();
-        loginDialogStage.initModality(Modality.WINDOW_MODAL);
-        loginDialogStage.setTitle("Login");
-        loginDialogStage.setResizable(false);
-        loginDialogStage.setOnCloseRequest(event -> loginDialogStage.close());
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("loginView.fxml"));
-        Parent loginParent = loader.load();
-        loginController = loader.getController();
-        Scene scene = new Scene(loginParent, 250, 110);
-        loginDialogStage.setScene(scene);
-        loginController.setLoginDialogStage(loginDialogStage);
-    }
-
     public void addFileToTable(){
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Add File to Repository");
@@ -136,6 +172,8 @@ public class MainController extends Controller {
         ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
         client.setFileList(records);
         serializeRecords(records);
+
+        Refresh.getInstance().refreshAll();
     }
 
     public void deleteFileFromTable(){
@@ -155,13 +193,15 @@ public class MainController extends Controller {
             ArrayList<FileInfo> records = new ArrayList<>(tableController.getRecords());
             client.setFileList(records);
             serializeRecords(records);
+
+            Refresh.getInstance().refreshAll();
         }
         catch (NullPointerException e) {
             new InfoAlert("No selected file.");
         }
     }
 
-    private void loadSerializedRecords() {
+    public void loadSerializedRecords() {
         try {
             String fileName = getClientUsername() + "fileinforecords.ser";
             ObjectInputStream in;
@@ -186,11 +226,11 @@ public class MainController extends Controller {
             in.close();
         }
         catch (IOException | ClassNotFoundException e) {
-            new ErrorAlert(e.getMessage());
+            new ErrorAlert("Unable to load serialized records.");
         }
     }
 
-    private void serializeRecords(Serializable records){
+    public void serializeRecords(Serializable records){
         try {
             FileOutputStream fileOut = new FileOutputStream(getClientUsername() + "fileinforecords.ser");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -198,7 +238,7 @@ public class MainController extends Controller {
             out.close();
             fileOut.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            new ErrorAlert("Unable to serialize table records.");
         }
 
     }
@@ -215,12 +255,12 @@ public class MainController extends Controller {
 
     public void editSyncTimeProperty(){
         PropertiesManager.getInstance().setProperty(getClientUsername() + "SYNC_TIME", syncTimeTextField.getText());
-        if(autoSyncButton.isSelected()) setTimerTask();
+        if(autoSyncButton.isSelected()) setSyncTimerTask();
     }
 
     public void toggleAutoSyncProperty(){
         PropertiesManager.getInstance().setProperty(getClientUsername() + "AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
-        if(autoSyncButton.isSelected()) setTimerTask();
+        if(autoSyncButton.isSelected()) setSyncTimerTask();
     }
 
     public void syncManually() {
@@ -256,31 +296,10 @@ public class MainController extends Controller {
             if(client.isLoggedIn()) {
                 fileTransferController.setRemoteSession(client.getRemoteSession());
                 loadSerializedRecords();
+                if(autoSyncButton.isSelected()) setSyncTimerTask();
+                setCheckTimerTask();
             }
             setDisableControls(!client.isLoggedIn());
-        }
-    }
-
-    private void initializeServerConnection(String ip, int port) throws RemoteException, NotBoundException {
-        //System.setProperty("javax.net.ssl.trustStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\rsc\\client\\ClientTruststore");
-        //System.setProperty("javax.net.ssl.trustStorePassword", "CopyCat");
-
-        Registry registry = LocateRegistry.getRegistry(ip, port);//, new SslRMIClientSocketFactory());
-
-        Server server = (Server) registry.lookup("SERVER");
-
-        loginController.setServer(server);
-    }
-
-    private boolean startServer() {
-        String serverIp = PropertiesManager.getInstance().getProperty("SERVER_IP");
-        int port = Integer.valueOf(PropertiesManager.getInstance().getProperty("PORT"));
-        try {
-            initializeServerConnection(serverIp, port);
-            return true;
-        } catch (RemoteException | NotBoundException e) {
-            new ErrorAlert("Server " + serverIp + ":" + port + "is unreachable.");
-            return false;
         }
     }
 
@@ -290,14 +309,21 @@ public class MainController extends Controller {
         }
         else {
             loginController.signOut();
-            client = new Client();
-            loginController.setClient(client);
-            loadProperties();
-            loadSerializedRecords();
-            loginController.setUsernameInTitle();
-            setDisableControls(!client.isLoggedIn());
+            cancelTimers();
+            setDefaultClient();
             new InfoAlert("Signed out.");
         }
+    }
+
+    private void setDefaultClient() {
+        fileTransferController = new FileTransferController();
+        client = new Client();
+        loginController.setClient(client);
+        loadProperties();
+        loginController.setUsernameInTitle();
+        setDisableControls(!client.isLoggedIn());
+        if (syncTimer != null) syncTimer.cancel();
+        tableController.setRecords(client.getFileList());
     }
 
     public void setDisableControls(boolean disable) {
@@ -311,5 +337,17 @@ public class MainController extends Controller {
         retrieveButton.setDisable(disable);
         loginMenuButton.setDisable(!disable);
         signOutButton.setDisable(disable);
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public FileTransferController getFileTransferController() {
+        return fileTransferController;
+    }
+
+    public TableController getTableController() {
+        return tableController;
     }
 }

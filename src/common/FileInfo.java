@@ -19,6 +19,15 @@ public class FileInfo implements Serializable {
     private Date lastModified;
     private Path path;
 
+    public FileInfo() {
+        name = "";
+        modified = false;
+        backuped = false;
+        size = 0L;
+        lastModified = new Date();
+        path = Paths.get("C");
+    }
+
     public FileInfo(File file){
         this.name = file.getName();
         this.modified = true;
@@ -50,6 +59,10 @@ public class FileInfo implements Serializable {
         File file = path.toFile();
         if(!file.exists()) {
             this.lastModified = new Date();
+        }
+        else {
+            this.size = file.length();
+            this.lastModified = new Date(file.lastModified());
         }
     }
 
