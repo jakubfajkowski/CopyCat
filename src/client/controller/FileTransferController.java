@@ -1,5 +1,6 @@
 package client.controller;
 
+import client.Client;
 import client.alert.CopyAlert;
 import client.alert.ErrorAlert;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
@@ -26,6 +27,10 @@ public class FileTransferController {
     private RemoteInputStreamServer remoteInputStreamServer;
     private InputStream clientInputStream;
     private boolean copying = false;
+
+    public FileTransferController(Client client) {
+        client.getRemoteSession();
+    }
 
     public void syncFiles(List<FileInfo> fileInfoList) throws IOException {
         Task<Void> task = new Task<Void>() {
@@ -133,10 +138,6 @@ public class FileTransferController {
         Files.copy(clientInputStream, target, REPLACE_EXISTING);
         Files.setLastModifiedTime(target, FileTime.fromMillis(remoteSession.getFileInfo(fileInfo).getLastModified().getTime()));
         clientInputStream.close();
-    }
-
-    public RemoteSession getRemoteSession() {
-        return remoteSession;
     }
 
     public void setRemoteSession(RemoteSession remoteSession) {

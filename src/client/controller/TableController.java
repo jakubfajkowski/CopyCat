@@ -5,11 +5,12 @@ import common.FileInfo;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.paint.Color;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,39 @@ public class TableController extends Controller {
         lastModified.setCellValueFactory(new PropertyValueFactory<>("lastModified"));
         path.setCellValueFactory(new PropertyValueFactory<>("path"));
 
+        setRowsStyle();
         table.setItems(records);
+    }
+
+    private void setRowsStyle() {
+        table.setRowFactory(row -> new TableRow<FileInfo>(){
+            @Override
+            public void updateItem(FileInfo item, boolean empty){
+                super.updateItem(item, empty);
+
+                if (item == null || empty) {
+                    setStyle("");
+                } else {
+
+                    if (!item.isBackuped()) {
+                        setSingleRowStyle(getChildren(), Color.RED);
+                    } else {
+                        if(item.isActual()){
+                            setSingleRowStyle(getChildren(), Color.GREEN);
+                        }
+                        else{
+                            setSingleRowStyle(getChildren(), Color.YELLOW);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void setSingleRowStyle(List<Node> nodes, Color textColor) {
+        for(Node child: nodes){
+            ((Labeled) child).setTextFill(textColor);
+        }
     }
 
     void addRecord(FileInfo fileInfo){

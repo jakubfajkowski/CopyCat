@@ -14,6 +14,7 @@ public class FileInfo implements Serializable {
 
     private String name;
     private boolean actual;
+    private boolean backuped;
     private Long size;
     private Date lastModified;
     private Path path;
@@ -21,6 +22,7 @@ public class FileInfo implements Serializable {
     public FileInfo(File file){
         this.name = file.getName();
         this.actual = false;
+        this.backuped = false;
         this.size = file.length();
         this.lastModified = new Date(file.lastModified());
         this.path = file.toPath();
@@ -28,6 +30,7 @@ public class FileInfo implements Serializable {
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeObject(name);
+        out.writeBoolean(backuped);
         out.writeLong(size);
         out.writeObject(lastModified);
         out.writeObject(path.toString());
@@ -36,6 +39,7 @@ public class FileInfo implements Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         name = (String) in.readObject();
         actual = false;
+        backuped = in.readBoolean();
         size = in.readLong();
         lastModified = (Date) in.readObject();
         path = Paths.get((String) in.readObject());
@@ -102,5 +106,13 @@ public class FileInfo implements Serializable {
 
     public void setActual(boolean actual) {
         this.actual = actual;
+    }
+
+    public boolean isBackuped() {
+        return backuped;
+    }
+
+    public void setBackuped(boolean backuped) {
+        this.backuped = backuped;
     }
 }
