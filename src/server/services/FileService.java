@@ -5,10 +5,12 @@ import common.FileInfo;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public interface FileService {
     boolean isModified(FileInfo fileInfo);
     void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream);
+    boolean deleteFile(FileInfo fileInfo);
     FileInfo getFileInfo(FileInfo fileInfo);
     RemoteInputStream getFile(FileInfo fileInfo) throws IOException;
 }

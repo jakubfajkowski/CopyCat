@@ -13,12 +13,14 @@ public class FileInfo implements Serializable {
     static final long serialVersionUID = 1L;
 
     private String name;
+    private boolean actual;
     private Long size;
     private Date lastModified;
     private Path path;
 
     public FileInfo(File file){
         this.name = file.getName();
+        this.actual = false;
         this.size = file.length();
         this.lastModified = new Date(file.lastModified());
         this.path = file.toPath();
@@ -33,10 +35,18 @@ public class FileInfo implements Serializable {
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         name = (String) in.readObject();
+        actual = false;
         size = in.readLong();
         lastModified = (Date) in.readObject();
         path = Paths.get((String) in.readObject());
+        updateObject();
+    }
 
+    public void updateObject() {
+        File file = path.toFile();
+        if(!file.exists()) {
+            this.lastModified = new Date();
+        }
     }
 
     public String getName() {
@@ -84,5 +94,13 @@ public class FileInfo implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(name, size, lastModified);
+    }
+
+    public boolean isActual() {
+        return actual;
+    }
+
+    public void setActual(boolean actual) {
+        this.actual = actual;
     }
 }

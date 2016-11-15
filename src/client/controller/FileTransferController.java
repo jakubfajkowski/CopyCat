@@ -1,12 +1,14 @@
 package client.controller;
 
+import client.alert.CopyAlert;
+import client.alert.ErrorAlert;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
 import common.FileInfo;
 import common.RemoteSession;
-import common.Server;
+import javafx.concurrent.Task;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -21,43 +23,116 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileTransferController {
     private RemoteSession remoteSession;
+    private RemoteInputStreamServer remoteInputStreamServer;
+    private InputStream clientInputStream;
+    private boolean copying = false;
 
     public void syncFiles(List<FileInfo> fileInfoList) throws IOException {
-        for (FileInfo fileInfo: fileInfoList) {
-            if (remoteSession.isModified(fileInfo)) {
-                remoteSession.sendFile(fileInfo, sendFile(fileInfo));
+        Task<Void> task = new Task<Void>() {
+            @Override
+            public Void call() throws Exception {
+                copying = true;
+                for (int i = 0; i < fileInfoList.size(); i++) {
+                    if (remoteSession.isModified(fileInfoList.get(i))) {
+                        remoteSession.sendFile(fileInfoList.get(i), sendFile(fileInfoList.get(i)));
+                        if(this.isCancelled()) break;
+                    }
+                    this.updateProgress(i + 1, fileInfoList.size());
+                }
+                return null ;
             }
+        };
+
+        CopyAlert copyAlert = new CopyAlert(task);
+        task.setOnSucceeded(event -> {
+            copying = false;
+            copyAlert.setDone();
+        });
+        task.setOnCancelled(event -> {
+            try {
+                remoteInputStreamServer.abort();
+                copying = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }});
+        task.setOnFailed(event -> {
+            try {
+                copying = false;
+                throw task.getException();
+            } catch (Throwable throwable) {
+                new ErrorAlert(throwable.getMessage());
+            }
+        });
+        new Thread(task).start();
+    }
+
+    public void checkIfActualFiles(List<FileInfo> fileInfoList) throws IOException {
+        for (FileInfo fileInfo: fileInfoList) {
+            fileInfo.setActual(!remoteSession.isModified(fileInfo));
         }
     }
 
     private RemoteInputStream sendFile(FileInfo fileInfo) throws IOException {
-        RemoteInputStreamServer remoteInputStreamServer = null;
+        RemoteInputStreamServer server = null;
         String path = fileInfo.getPath().toString();
 
         try {
-            remoteInputStreamServer = new GZIPRemoteInputStream(new BufferedInputStream(
+            server = new GZIPRemoteInputStream(new BufferedInputStream(
                     new FileInputStream(path)));
-            RemoteInputStream result = remoteInputStreamServer.export();
-            remoteInputStreamServer = null;
+            this.remoteInputStreamServer = server;
+            RemoteInputStream result = server.export();
+            server = null;
             return result;
         } finally {
-            if(remoteInputStreamServer != null) remoteInputStreamServer.close();
+            if(server != null) server.close();
         }
     }
 
     public void retrieveBackup(FileInfo fileInfo) throws IOException {
-        if (remoteSession.isModified(fileInfo)) {
-            getFile(fileInfo, remoteSession.getFile(fileInfo));
-        }
+        Task<Void> task = new Task<Void>() {
+            @Override
+            public Void call() throws Exception {
+                fileInfo.updateObject();
+                if (remoteSession.isModified(fileInfo)) {
+                    copying = true;
+                    getFile(fileInfo, remoteSession.getFile(fileInfo));
+                } else this.done();
+                this.updateProgress(1,1);
+                return null ;
+            }
+        };
+
+        CopyAlert copyAlert = new CopyAlert(task);
+        task.setOnSucceeded(event -> {
+            copying = false;
+            copyAlert.setDone();
+        });
+        task.setOnCancelled(event -> {
+            try {
+                clientInputStream.close();
+                copying = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }});
+        task.setOnFailed(event -> {
+            try {
+                copying = false;
+                throw task.getException();
+            } catch (Throwable throwable) {
+                new ErrorAlert(throwable.getMessage());
+            }
+        });
+    new Thread(task).start();
+
     }
 
     private void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
-        InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
+        clientInputStream = RemoteInputStreamClient.wrap(remoteInputStream);
         Path target = fileInfo.getPath();
 
-        Files.copy(inputStream, target, REPLACE_EXISTING);
+        Files.copy(clientInputStream, target, REPLACE_EXISTING);
         Files.setLastModifiedTime(target, FileTime.fromMillis(remoteSession.getFileInfo(fileInfo).getLastModified().getTime()));
-        inputStream.close();
+        clientInputStream.close();
     }
 
     public RemoteSession getRemoteSession() {
@@ -66,5 +141,9 @@ public class FileTransferController {
 
     public void setRemoteSession(RemoteSession remoteSession) {
         this.remoteSession = remoteSession;
+    }
+
+    public boolean isCopying() {
+        return copying;
     }
 }

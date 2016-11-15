@@ -8,6 +8,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     public AuthorizationServiceImpl() {
         propertiesManager.setFileName("credentials");
+        propertiesManager.load();
     }
 
     @Override

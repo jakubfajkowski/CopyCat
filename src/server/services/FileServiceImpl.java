@@ -42,17 +42,29 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) {
-        try {
-            InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream);
-            Path target = getServerFilePath(fileInfo.getPath());
+        Path target = getServerFilePath(fileInfo.getPath());
 
+        try (InputStream inputStream= RemoteInputStreamClient.wrap(remoteInputStream)){
             createServerFileDirectory(target);
             Files.copy(inputStream, target, REPLACE_EXISTING);
             Files.setLastModifiedTime(target, FileTime.fromMillis(fileInfo.getLastModified().getTime()));
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(target.toString() + " DONE");
         }
+        catch (IOException e) {
+            System.out.println(target.toString() + " ABORTED");
+            deleteFile(fileInfo);
+        }
+    }
+
+    @Override
+    public boolean deleteFile(FileInfo fileInfo) {
+        try {
+            Files.delete(getServerFilePath(fileInfo.getPath()));
+            return true;
+        } catch (IOException e1) {
+            System.out.println("Can't delete: " + e1.getMessage());
+        }
+        return false;
     }
 
     @Override

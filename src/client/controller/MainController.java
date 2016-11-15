@@ -1,6 +1,7 @@
 package client.controller;
 
 import client.Client;
+import client.alert.CopyAlert;
 import client.alert.ErrorAlert;
 import client.alert.InfoAlert;
 import common.FileInfo;
@@ -22,13 +23,15 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class MainController extends Controller {
     private Client client;
+    private Timer timer;
     @FXML private LoginController loginController;
     @FXML private FileTransferController fileTransferController;
 
@@ -57,12 +60,34 @@ public class MainController extends Controller {
             fileTransferController = new FileTransferController();
             client = new Client();
             loginController.setClient(client);
-            loadSerializedRecords();
+            setDisableControls(true);
             loadProperties();
+            if(autoSyncButton.isSelected()) setTimerTask();
             startServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setTimerTask() {
+        DateFormat sdf = new SimpleDateFormat("HH:mm");
+        try {
+            Date date = sdf.parse(syncTimeTextField.getText());
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    syncManually();
+                }
+            };
+
+            timer = new Timer();
+            timer.schedule(timerTask, date, TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
+        } catch (ParseException e) {
+            new ErrorAlert("Cannot resolve sync time.");
+        }
+
+
+
     }
 
     private void loadProperties() {
@@ -72,8 +97,8 @@ public class MainController extends Controller {
         pm.setFileName("config");
         pm.load();
 
-        serverIpTextField.setText(pm.getProperty(username + "SERVER_IP"));
-        portTextField.setText(pm.getProperty(username + "PORT"));
+        serverIpTextField.setText(pm.getProperty("SERVER_IP"));
+        portTextField.setText(pm.getProperty("PORT"));
         syncTimeTextField.setText(pm.getProperty(username + "SYNC_TIME"));
         autoSyncButton.setSelected(Boolean.valueOf(pm.getProperty(username + "AUTO_SYNC")));
     }
@@ -155,6 +180,7 @@ public class MainController extends Controller {
             @SuppressWarnings("unchecked")
             List<FileInfo> list = (List<FileInfo>) in.readObject();
             client.setFileList(list);
+            fileTransferController.checkIfActualFiles(list);
             tableController.setRecords(list);
             fileIn.close();
             in.close();
@@ -189,53 +215,49 @@ public class MainController extends Controller {
 
     public void editSyncTimeProperty(){
         PropertiesManager.getInstance().setProperty(getClientUsername() + "SYNC_TIME", syncTimeTextField.getText());
+        if(autoSyncButton.isSelected()) setTimerTask();
     }
 
     public void toggleAutoSyncProperty(){
         PropertiesManager.getInstance().setProperty(getClientUsername() + "AUTO_SYNC", String.valueOf(autoSyncButton.isSelected()));
+        if(autoSyncButton.isSelected()) setTimerTask();
     }
 
     public void syncManually() {
-        Task<Void> task = new Task<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    fileTransferController.syncFiles(client.getFileList());
-                }
-                catch (IOException e) {
-                    new ErrorAlert(e.getMessage());
-                }
-                return null ;
+        if (fileTransferController.isCopying()) {
+            new InfoAlert("Already syncing.");
+        }
+        else {
+            try {
+                fileTransferController.syncFiles(client.getFileList());
+            } catch (IOException e) {
+                new ErrorAlert(e.getMessage());
             }
-        };
-
-        task.setOnSucceeded(event -> new InfoAlert("Done."));
-
-        new Thread(task).start();
+        }
     }
 
     public void retrieveBackup() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    fileTransferController.retrieveBackup(tableController.getSelectedFileRecord());
-                }
-                catch (IOException e) {
-                    new ErrorAlert(e.getMessage());
-                }
-                catch (NullPointerException e) {
-                    new InfoAlert("No selected file.");
-                }
+        if (fileTransferController.isCopying()){
+            new InfoAlert("Can't retrieve while syncing.");
+        }
+        else {
+            try {
+                fileTransferController.retrieveBackup(tableController.getSelectedFileRecord());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }).start();
+        }
     }
 
     public void showLoginDialog() {
         if(startServer()) {
             loginController.showLoginDialog();
             loadProperties();
-            loadSerializedRecords();
+            if(client.isLoggedIn()) {
+                fileTransferController.setRemoteSession(client.getRemoteSession());
+                loadSerializedRecords();
+            }
+            setDisableControls(!client.isLoggedIn());
         }
     }
 
@@ -263,12 +285,31 @@ public class MainController extends Controller {
     }
 
     public void signOut() {
-        loginController.signOut();
-        client = new Client();
-        loginController.setClient(client);
-        loadProperties();
-        loadSerializedRecords();
-        loginController.setUsernameInTitle();
-        new InfoAlert("Signed out.");
+        if (fileTransferController.isCopying()){
+            new InfoAlert("Can't sign out while syncing.");
+        }
+        else {
+            loginController.signOut();
+            client = new Client();
+            loginController.setClient(client);
+            loadProperties();
+            loadSerializedRecords();
+            loginController.setUsernameInTitle();
+            setDisableControls(!client.isLoggedIn());
+            new InfoAlert("Signed out.");
+        }
+    }
+
+    public void setDisableControls(boolean disable) {
+        serverIpTextField.setDisable(!disable);
+        portTextField.setDisable(!disable);
+        syncTimeTextField.setDisable(disable);
+        autoSyncButton.setDisable(disable);
+        manualSyncButton.setDisable(disable);
+        addButton.setDisable(disable);
+        deleteButton.setDisable(disable);
+        retrieveButton.setDisable(disable);
+        loginMenuButton.setDisable(!disable);
+        signOutButton.setDisable(disable);
     }
 }

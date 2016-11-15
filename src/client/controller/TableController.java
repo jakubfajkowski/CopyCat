@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 public class TableController extends Controller {
     @FXML private TableView<FileInfo> table;
     @FXML private TableColumn<FileInfo, String> name;
+    @FXML private TableColumn<FileInfo, Boolean> actual;
     @FXML private TableColumn<FileInfo, Long> size;
     @FXML private TableColumn<FileInfo, String> extension;
     @FXML private TableColumn<FileInfo, Date> lastModified;
@@ -30,6 +31,7 @@ public class TableController extends Controller {
         super.initialize(location, resources);
 
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
+        actual.setCellValueFactory(new PropertyValueFactory<>("actual"));
         size.setCellValueFactory(new PropertyValueFactory<>("size"));
         size.setCellFactory(c -> new TableCell<FileInfo, Long>() {
 

@@ -26,32 +26,37 @@ public class RemoteSessionImpl extends UnicastRemoteObject implements RemoteSess
     @Override
     public void signOut() throws RemoteException {
         UnicastRemoteObject.unexportObject(this, true);
-
         System.out.println("signOut " + clientCredentials.getUsername());
     }
 
     @Override
     public boolean isModified(FileInfo fileInfo) throws RemoteException {
         boolean isModified = fileService.isModified(fileInfo);
-        System.out.println("isModified " + fileInfo.getName() + " " + isModified);
+        System.out.println(clientCredentials.getUsername() + " isModified " + fileInfo.getName() + " " + isModified);
         return isModified;
     }
 
     @Override
     public void sendFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws RemoteException {
-        System.out.println("sendFile " + fileInfo.getName());
+        System.out.println(clientCredentials.getUsername() + " sendFile " + fileInfo.getName());
         fileService.sendFile(fileInfo, remoteInputStream);
     }
 
     public FileInfo getFileInfo(FileInfo fileInfo) throws RemoteException {
-        System.out.println("getFileInfo " + fileInfo.getName());
+        System.out.println(clientCredentials.getUsername() + " getFileInfo " + fileInfo.getName());
         return fileService.getFileInfo(fileInfo);
     }
 
     @Override
     public RemoteInputStream getFile(FileInfo fileInfo) throws IOException  {
-        System.out.println("getFile " + fileInfo.getName());
+        System.out.println(clientCredentials.getUsername() + " getFile " + fileInfo.getName());
         return fileService.getFile(fileInfo);
+    }
+
+    @Override
+    public boolean deleteFile(FileInfo fileInfo) throws RemoteException {
+        System.out.println(clientCredentials.getUsername() + " deleteFile " + fileInfo.getName());
+        return fileService.deleteFile(fileInfo);
     }
 
     @Override

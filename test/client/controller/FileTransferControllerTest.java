@@ -16,16 +16,13 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.ExportException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by FajQa on 28.10.2016.
- */
 public class FileTransferControllerTest {
-    private boolean isServerUp = false;
     @Test
     public void syncFiles() throws Exception {
         prepareServer();
@@ -98,9 +95,7 @@ public class FileTransferControllerTest {
     }
 
     private void prepareServer() {
-        if (!isServerUp)
-            server.Main.main(null);
-        isServerUp = true;
+        server.Main.main(null);
     }
 
     private Server initializeServerConnection(String ip, int port) throws RemoteException, NotBoundException {
