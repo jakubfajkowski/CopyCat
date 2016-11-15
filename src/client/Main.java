@@ -1,14 +1,12 @@
 package client;
 
-import java.io.IOException;
-
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 
 public class Main extends Application {
@@ -22,7 +20,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         Main.primaryStage = primaryStage;
         showMainWindow(primaryStage);
-
     }
 
     private void showMainWindow(Stage primaryStage) throws IOException {

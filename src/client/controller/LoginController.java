@@ -55,58 +55,53 @@ public class LoginController extends Controller {
     }
 
     public void closeLoginDialog() {
+        passwordField.clear();
         loginDialogStage.close();
     }
 
-    public void loginClient() throws RemoteException, NotBoundException {
-        ClientCredentials clientCredentials = collectClientCredentials();
-        client.setClientCredentials(clientCredentials);
-        client.setRemoteSession(server.login(client.getClientCredentials()));
+    public void loginClient() {
+        try {
+            ClientCredentials clientCredentials = collectClientCredentials();
+            client.setClientCredentials(clientCredentials);
+            client.setRemoteSession(server.login(client.getClientCredentials()));
 
-        boolean response = client.getRemoteSession() != null;
+            boolean response = client.getRemoteSession() != null;
 
-        new InfoAlert(processLoginResponse(response));
+            new InfoAlert(processLoginResponse(response));
 
-        if (response){
-            client.setLoggedIn(true);
-            setUsernameInTitle();
-            loginDialogStage.close();
+            if (response){
+                client.setLoggedIn(true);
+                setUsernameInTitle();
+                closeLoginDialog();
+            }
+        } catch (RemoteException e) {
+            new ErrorAlert("Service unreachable.");
         }
     }
 
     private String processLoginResponse(boolean response) {
-        String communicate;
-        if (response)
-            communicate = "Logged in.";
-        else
-            communicate = "Invalid username/password.";
-
-        return communicate;
+        return response ? "Logged in." : "Invalid username/password.";
     }
 
     public void setUsernameInTitle() {
-        if (client.getClientCredentials() != null)
+        if (client.isLoggedIn())
             Main.primaryStage.setTitle("CopyCat (" + client.getClientCredentials().getUsername() + ")");
-        else
-            Main.primaryStage.setTitle("CopyCat");
     }
 
-    public void registerClient() throws RemoteException, NotBoundException {
-        ClientCredentials clientCredentials = collectClientCredentials();
-        client.setClientCredentials(clientCredentials);
-        boolean response = server.register(client.getClientCredentials());
+    public void registerClient() {
+        try {
+            ClientCredentials clientCredentials = collectClientCredentials();
+            client.setClientCredentials(clientCredentials);
+            boolean response = server.register(client.getClientCredentials());
 
-        new InfoAlert(processRegisterResponse(response));
+            new InfoAlert(processRegisterResponse(response));
+        } catch (RemoteException e) {
+            new ErrorAlert("Service unreachable.");
+        }
     }
 
     private String processRegisterResponse(boolean response) {
-        String communicate;
-        if (response)
-            communicate = "Registration successful.";
-        else
-            communicate = "Username already taken.";
-
-        return communicate;
+        return response ? "Registration successful." : "Username already taken.";
     }
 
     private ClientCredentials collectClientCredentials(){
@@ -120,7 +115,7 @@ public class LoginController extends Controller {
         try {
             client.getRemoteSession().signOut();
         } catch (RemoteException e) {
-            new ErrorAlert("Unable to sign out.");
+            new ErrorAlert("Service unreachable.");
         }
     }
 

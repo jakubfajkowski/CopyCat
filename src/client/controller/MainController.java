@@ -279,7 +279,7 @@ public class MainController extends Controller {
             initializeServerConnection(serverIp, port);
             return true;
         } catch (RemoteException | NotBoundException e) {
-            new ErrorAlert("Could not establish server connection.");
+            new ErrorAlert("Server " + serverIp + ":" + port + "is unreachable.");
             return false;
         }
     }

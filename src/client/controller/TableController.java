@@ -1,7 +1,7 @@
 package client.controller;
 
-import client.controller.Controller;
 import common.FileInfo;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -10,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -68,11 +67,11 @@ public class TableController extends Controller {
                     if (!item.isBackuped()) {
                         setSingleRowStyle(getChildren(), Color.RED);
                     } else {
-                        if(item.isActual()){
-                            setSingleRowStyle(getChildren(), Color.GREEN);
+                        if(item.isModified()){
+                            setSingleRowStyle(getChildren(), Color.YELLOW);
                         }
                         else{
-                            setSingleRowStyle(getChildren(), Color.YELLOW);
+                            setSingleRowStyle(getChildren(), Color.GREEN);
                         }
                     }
                 }
@@ -99,14 +98,13 @@ public class TableController extends Controller {
         return table.getSelectionModel().getSelectedItem();
     }
 
-    public ObservableList<FileInfo> getRecords() {
+    ObservableList<FileInfo> getRecords() {
         return records;
     }
 
-    public void setRecords(List<FileInfo> records) {
+    void setRecords(List<FileInfo> records) {
         this.records = FXCollections.observableArrayList(records);
         table.setItems(this.records);
         table.refresh();
     }
-
 }

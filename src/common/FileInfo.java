@@ -13,7 +13,7 @@ public class FileInfo implements Serializable {
     static final long serialVersionUID = 1L;
 
     private String name;
-    private boolean actual;
+    private boolean modified;
     private boolean backuped;
     private Long size;
     private Date lastModified;
@@ -21,7 +21,7 @@ public class FileInfo implements Serializable {
 
     public FileInfo(File file){
         this.name = file.getName();
-        this.actual = false;
+        this.modified = true;
         this.backuped = false;
         this.size = file.length();
         this.lastModified = new Date(file.lastModified());
@@ -38,7 +38,7 @@ public class FileInfo implements Serializable {
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         name = (String) in.readObject();
-        actual = false;
+        modified = true;
         backuped = in.readBoolean();
         size = in.readLong();
         lastModified = (Date) in.readObject();
@@ -100,12 +100,12 @@ public class FileInfo implements Serializable {
         return Objects.hash(name, size, lastModified);
     }
 
-    public boolean isActual() {
-        return actual;
+    public boolean isModified() {
+        return modified;
     }
 
-    public void setActual(boolean actual) {
-        this.actual = actual;
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 
     public boolean isBackuped() {

@@ -1,6 +1,5 @@
 package client.controller;
 
-import client.Client;
 import client.alert.CopyAlert;
 import client.alert.ErrorAlert;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
@@ -22,15 +21,11 @@ import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class FileTransferController {
+public class FileTransferController extends Controller {
     private RemoteSession remoteSession;
     private RemoteInputStreamServer remoteInputStreamServer;
     private InputStream clientInputStream;
     private boolean copying = false;
-
-    public FileTransferController(Client client) {
-        client.getRemoteSession();
-    }
 
     public void syncFiles(List<FileInfo> fileInfoList) throws IOException {
         Task<Void> task = new Task<Void>() {
@@ -73,8 +68,12 @@ public class FileTransferController {
 
     public void checkIfActualFiles(List<FileInfo> fileInfoList) throws IOException {
         for (FileInfo fileInfo: fileInfoList) {
-            fileInfo.setActual(!remoteSession.isModified(fileInfo));
+            fileInfo.setModified(remoteSession.isModified(fileInfo));
         }
+    }
+
+    public void checkIfActualFile(FileInfo fileInfo) throws IOException {
+        fileInfo.setModified(remoteSession.isModified(fileInfo));
     }
 
     private RemoteInputStream sendFile(FileInfo fileInfo) throws IOException {
