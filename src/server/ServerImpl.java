@@ -1,18 +1,12 @@
 package server;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import common.FileInfo;
+import common.ClientCredentials;
 import common.RemoteSession;
 import common.Server;
 import server.services.AuthorizationServiceImpl;
-import common.ClientCredentials;
-import server.services.FileServiceImpl;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
     private AuthorizationServiceImpl authorizationService = new AuthorizationServiceImpl();

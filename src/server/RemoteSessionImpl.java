@@ -1,11 +1,9 @@
 package server;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import common.ClientCredentials;
 import common.FileInfo;
 import common.RemoteSession;
-import common.Server;
-import server.services.AuthorizationServiceImpl;
-import common.ClientCredentials;
 import server.services.FileServiceImpl;
 
 import java.io.FileNotFoundException;

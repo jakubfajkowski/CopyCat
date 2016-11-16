@@ -4,7 +4,6 @@ import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
-import common.ClientCredentials;
 import common.FileInfo;
 
 import java.io.*;
