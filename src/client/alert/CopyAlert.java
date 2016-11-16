@@ -1,5 +1,6 @@
 package client.alert;
 
+import client.Main;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
@@ -17,7 +18,11 @@ public class CopyAlert extends Alert {
 
         bindProgressBar(copyTask);
         setCancelButton(copyTask);
-        undecorateWindow();
+        decorateWindow();
+        setOnCloseRequest(event -> {
+            copyTask.cancel();
+            this.close();
+        });
 
         show();
     }
@@ -35,15 +40,22 @@ public class CopyAlert extends Alert {
         setResultConverter(dialogButton -> {
             if (dialogButton == cancel) {
                 copyTask.cancel();
+                this.close();
             }
             return null;
         });
     }
 
-    private void undecorateWindow() {
+    private void decorateWindow() {
         this.initModality(Modality.NONE);
+        setResizable(true);
+        getDialogPane().setPrefSize(250, 100);
+        setResizable(false);
+
         Stage stage = (Stage) this.getDialogPane().getScene().getWindow();
-        stage.initStyle(StageStyle.UTILITY);
+        stage.setWidth(200);
+        stage.getIcons().setAll(Main.primaryStage.getIcons());
+        stage.initStyle(StageStyle.UNIFIED);
         stage.setAlwaysOnTop(true);
     }
 

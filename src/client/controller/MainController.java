@@ -17,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.*;
 import java.net.URL;
@@ -76,7 +77,8 @@ public class MainController extends Controller {
 
     private void createLoginDialog() throws IOException {
         Stage loginDialogStage = new Stage();
-        loginDialogStage.initModality(Modality.WINDOW_MODAL);
+        loginDialogStage.initModality(Modality.APPLICATION_MODAL);
+        loginDialogStage.initStyle(StageStyle.UTILITY);
         loginDialogStage.setTitle("Login");
         loginDialogStage.setResizable(false);
         loginDialogStage.setOnCloseRequest(event -> loginDialogStage.close());
