@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class Main extends Application {
 
     private void showMainWindow(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("mainView.fxml"));
+        primaryStage.getIcons().add(new Image(getClass().getResource("icon.png").toString()));
         primaryStage.setTitle("CopyCat");
         primaryStage.setScene(new Scene(root, 852, 400));
         primaryStage.show();
