@@ -16,7 +16,6 @@ import java.util.List;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
     private AuthorizationServiceImpl authorizationService = new AuthorizationServiceImpl();
-    private List<RemoteSession> remoteSessions = new ArrayList<>();
 
     protected ServerImpl() throws RemoteException {
     }
@@ -26,9 +25,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         boolean isValid = authorizationService.login(clientCredentials);
 
         System.out.println("login " + clientCredentials.getUsername() + " " + isValid);
-        RemoteSession remoteSession = isValid ? new RemoteSessionImpl(clientCredentials) : null;
-        remoteSessions.add(remoteSession);
-        return remoteSession;
+
+        return isValid ? new RemoteSessionImpl(clientCredentials) : null;
     }
 
     @Override
