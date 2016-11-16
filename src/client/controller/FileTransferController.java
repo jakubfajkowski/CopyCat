@@ -22,8 +22,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileTransferController extends Controller {
     private RemoteSession remoteSession;
-    private RemoteInputStreamServer remoteInputStreamServer;
-    private InputStream clientInputStream;
+    private RemoteInputStream remoteInputStream;
     private boolean copying = false;
 
     public void syncFiles(List<FileInfo> fileInfoList) throws IOException {
@@ -48,13 +47,14 @@ public class FileTransferController extends Controller {
         };
 
         CopyAlert copyAlert = new CopyAlert(task);
+
         task.setOnSucceeded(event -> {
             copying = false;
             copyAlert.setDone();
         });
         task.setOnCancelled(event -> {
             try {
-                remoteInputStreamServer.abort();
+                remoteInputStream.close(true);
                 copying = false;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -62,11 +62,13 @@ public class FileTransferController extends Controller {
         task.setOnFailed(event -> {
             try {
                 copying = false;
+                copyAlert.close();
                 throw task.getException();
             } catch (Throwable throwable) {
                 new ErrorAlert(throwable.getMessage());
             }
         });
+
         new Thread(task).start();
     }
 
@@ -77,8 +79,8 @@ public class FileTransferController extends Controller {
         try {
             server = new GZIPRemoteInputStream(new BufferedInputStream(
                     new FileInputStream(path)));
-            this.remoteInputStreamServer = server;
             RemoteInputStream result = server.export();
+            remoteInputStream = server;
             server = null;
             return result;
         } finally {
@@ -102,40 +104,42 @@ public class FileTransferController extends Controller {
         };
 
         CopyAlert copyAlert = new CopyAlert(task);
+
         task.setOnSucceeded(event -> {
             copying = false;
             copyAlert.setDone();
         });
         task.setOnCancelled(event -> {
             try {
-                clientInputStream.close();
+                remoteInputStream.close(true);
                 copying = false;
+                Files.delete(fileInfo.getPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }});
         task.setOnFailed(event -> {
             try {
                 copying = false;
+                copyAlert.close();
+                Files.delete(fileInfo.getPath());
                 throw task.getException();
             } catch (Throwable throwable) {
                 new ErrorAlert(throwable.getMessage());
             }
         });
-    new Thread(task).start();
+
+        new Thread(task).start();
 
     }
 
     private void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
-        clientInputStream = RemoteInputStreamClient.wrap(remoteInputStream);
+        this.remoteInputStream = remoteInputStream;
+        InputStream clientInputStream = RemoteInputStreamClient.wrap(remoteInputStream);
         Path target = fileInfo.getPath();
 
         Files.copy(clientInputStream, target, REPLACE_EXISTING);
         Files.setLastModifiedTime(target, FileTime.fromMillis(remoteSession.getFileInfo(fileInfo).getLastModified().getTime()));
         clientInputStream.close();
-    }
-
-    public void setRemoteSession(RemoteSession remoteSession) {
-        this.remoteSession = remoteSession;
     }
 
     public void checkIfActualFiles(List<FileInfo> fileInfoList) {
@@ -153,6 +157,14 @@ public class FileTransferController extends Controller {
         } catch (RemoteException e) {
             new ErrorAlert("Service unreachable.");
         }
+    }
+
+    public boolean deleteFile(FileInfo fileInfo) throws RemoteException {
+        return remoteSession.deleteFile(fileInfo);
+    }
+
+    public void setRemoteSession(RemoteSession remoteSession) {
+        this.remoteSession = remoteSession;
     }
 
     public boolean isCopying() {

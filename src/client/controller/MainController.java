@@ -187,6 +187,7 @@ public class MainController extends Controller {
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent())
                 if (result.get() == ButtonType.OK) {
+                    fileTransferController.deleteFile(fileInfo);
                     tableController.popSelectedRecord();
                 }
 
@@ -198,6 +199,8 @@ public class MainController extends Controller {
         }
         catch (NullPointerException e) {
             new InfoAlert("No selected file.");
+        } catch (RemoteException e) {
+            new ErrorAlert("Service unreachable.");
         }
     }
 
@@ -282,9 +285,14 @@ public class MainController extends Controller {
         }
         else {
             try {
-                fileTransferController.retrieveBackup(tableController.getSelectedFileRecord());
+                FileInfo selectedFileRecord = tableController.getSelectedFileRecord();
+                if (selectedFileRecord != null) {
+                    fileTransferController.retrieveBackup(selectedFileRecord);
+                }
+                else
+                    new InfoAlert("Please select a file to retrieve.");
             } catch (IOException e) {
-                e.printStackTrace();
+                new ErrorAlert(e.getMessage());
             }
         }
     }

@@ -13,7 +13,7 @@ public class CopyAlert extends Alert {
     public CopyAlert(Task<Void> copyTask){
         super(AlertType.NONE);
         setTitle("CopyCat");
-        setHeaderText("Copying");
+        setHeaderText("Copying...");
 
         bindProgressBar(copyTask);
         setCancelButton(copyTask);

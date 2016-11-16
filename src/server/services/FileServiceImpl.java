@@ -66,8 +66,8 @@ public class FileServiceImpl implements FileService {
         try {
             Files.delete(getServerFilePath(fileInfo.getPath()));
             return true;
-        } catch (IOException e1) {
-            System.out.println("Can't delete: " + e1.getMessage());
+        } catch (IOException e) {
+            System.out.println("Can't delete: " + e.getMessage());
         }
         return false;
     }
