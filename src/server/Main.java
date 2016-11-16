@@ -14,7 +14,6 @@ public class Main{
         //System.setProperty("javax.net.ssl.keyStore", "C:\\Users\\FajQa\\IdeaProjects\\CopyCat\\rsc\\server\\server.keystore");
         //System.setProperty("javax.net.ssl.keyStorePassword", "CopyCat");
         int port = (args.length > 0) ? Integer.valueOf(args[0]) : Registry.REGISTRY_PORT;
-
         try{
             Server stub = new ServerImpl();//, new SslRMIClientSocketFactory(), new SslRMIServerSocketFactory());
 

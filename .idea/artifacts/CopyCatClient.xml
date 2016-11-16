@@ -6,15 +6,17 @@
         <option name="appClass" value="client.Main" />
         <option name="description" value="" />
         <option name="htmlPlaceholderId" value="" />
-        <option name="title" value="" />
+        <option name="title" value="CopyCat" />
         <option name="vendor" value="" />
         <option name="version" value="" />
+        <option name="width" value="852" />
       </options>
     </properties>
     <root id="root">
       <element id="archive" name="CopyCat.jar">
         <element id="module-output" name="CopyCat" />
-        <element id="library" level="project" name="rmiio-2.1.2" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-logging-1.2.jar" path-in-jar="/" />
+        <element id="extracted-dir" path="$PROJECT_DIR$/lib/rmiio-2.1.2.jar" path-in-jar="/" />
       </element>
     </root>
   </artifact>

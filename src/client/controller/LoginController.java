@@ -6,6 +6,7 @@ import client.alert.ErrorAlert;
 import client.alert.InfoAlert;
 import client.controller.Controller;
 import common.ClientCredentials;
+import common.RemoteSession;
 import common.Server;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -114,7 +115,10 @@ public class LoginController extends Controller {
 
     public void signOut() {
         try {
-            client.getRemoteSession().signOut();
+            RemoteSession remoteSession = client.getRemoteSession();
+            if (remoteSession != null) {
+                remoteSession.signOut();
+            }
         } catch (RemoteException e) {
             new ErrorAlert("Service unreachable.");
         }

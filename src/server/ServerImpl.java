@@ -11,9 +11,12 @@ import server.services.FileServiceImpl;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerImpl extends UnicastRemoteObject implements Server {
     private AuthorizationServiceImpl authorizationService = new AuthorizationServiceImpl();
+    private List<RemoteSession> remoteSessions = new ArrayList<>();
 
     protected ServerImpl() throws RemoteException {
     }
@@ -23,7 +26,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         boolean isValid = authorizationService.login(clientCredentials);
 
         System.out.println("login " + clientCredentials.getUsername() + " " + isValid);
-        return isValid ? new RemoteSessionImpl(clientCredentials) : null;
+        RemoteSession remoteSession = isValid ? new RemoteSessionImpl(clientCredentials) : null;
+        remoteSessions.add(remoteSession);
+        return remoteSession;
     }
 
     @Override

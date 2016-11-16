@@ -8,6 +8,7 @@ import client.alert.InfoAlert;
 import common.FileInfo;
 import common.PropertiesManager;
 import common.Server;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -58,12 +59,11 @@ public class MainController extends Controller {
         try {
             Refresh.getInstance().setMainController(this);
             Main.primaryStage.setOnCloseRequest(event -> {
-                cancelTimers();
+                signOut();
                 System.exit(0);
             });
             createLoginDialog();
             setDefaultClient();
-            startServer();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,7 +95,7 @@ public class MainController extends Controller {
             initializeServerConnection(serverIp, port);
             return true;
         } catch (RemoteException | NotBoundException e) {
-            new ErrorAlert("Server " + serverIp + ":" + port + "is unreachable.");
+            new ErrorAlert("Server " + serverIp + ":" + port + " is unreachable.");
             return false;
         }
     }
@@ -113,20 +113,43 @@ public class MainController extends Controller {
 
     private void setSyncTimerTask() {
         syncTimer = new Timer();
-        DateFormat sdf = new SimpleDateFormat("HH:mm");
+
         try {
-            Date date = sdf.parse(syncTimeTextField.getText());
+            Date date = firstSyncTime(syncTimeTextField.getText());
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    syncManually();
+                    Platform.runLater(() -> syncManually());
                 }
             };
 
             syncTimer.schedule(timerTask, date, TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
         } catch (ParseException e) {
             new ErrorAlert("Cannot resolve sync time.");
+            autoSyncButton.setSelected(false);
+        } catch (NullPointerException e) {
+            new ErrorAlert("You must specify sync time.");
+            autoSyncButton.setSelected(false);
         }
+    }
+
+    private Date firstSyncTime(String timeString) throws ParseException {
+        DateFormat sdf = new SimpleDateFormat("HH:mm");
+        Calendar syncTimeCal = Calendar.getInstance();
+        syncTimeCal.setTime(sdf.parse(timeString));
+        int syncHour = syncTimeCal.get(Calendar.HOUR);
+        int syncMinute = syncTimeCal.get(Calendar.MINUTE);
+
+        Calendar todayCal = Calendar.getInstance();
+        int todayHour = todayCal.get(Calendar.HOUR);
+        int todayMinute = todayCal.get(Calendar.MINUTE);
+
+        if (syncHour <= todayHour && syncMinute <= todayMinute)
+            todayCal.add(Calendar.DATE, 1);
+        todayCal.set(Calendar.HOUR, syncHour);
+        todayCal.set(Calendar.MINUTE, syncMinute);
+
+        return todayCal.getTime();
     }
 
     private void setCheckTimerTask() {
@@ -134,7 +157,7 @@ public class MainController extends Controller {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                Refresh.getInstance().refreshAll();
+                Platform.runLater(() -> Refresh.getInstance().refreshAll());
             }
         };
         checkTimer.schedule(timerTask, new Date(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
@@ -319,7 +342,6 @@ public class MainController extends Controller {
             loginController.signOut();
             cancelTimers();
             setDefaultClient();
-            new InfoAlert("Signed out.");
         }
     }
 
