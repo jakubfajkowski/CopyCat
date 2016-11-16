@@ -3,6 +3,7 @@ package client;
 import client.controller.MainController;
 import common.FileInfo;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 public class Refresh {
@@ -17,7 +18,7 @@ public class Refresh {
 
     private MainController mainController;
 
-    public boolean refreshAll() {
+    public boolean refreshAll() throws RemoteException {
         mainController.loadSerializedRecords();
         mainController.getFileTransferController().checkIfActualFiles(mainController.getClient().getFileList());
         mainController.getTableController().paintRecords();
@@ -25,7 +26,7 @@ public class Refresh {
         return true;
     }
 
-    public boolean refresh(FileInfo fileInfo) {
+    public boolean refresh(FileInfo fileInfo) throws RemoteException {
         mainController.loadSerializedRecords();
         mainController.getFileTransferController().checkIfActualFile(fileInfo);
         mainController.getTableController().paintRecords();

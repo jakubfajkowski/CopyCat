@@ -159,7 +159,13 @@ public class MainController extends Controller {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(() -> Refresh.getInstance().refreshAll());
+                Platform.runLater(() -> {
+                    try {
+                        Refresh.getInstance().refreshAll();
+                    } catch (RemoteException e) {
+                        Platform.runLater(() -> {new ErrorAlert("Service unreachable.");});
+                    }
+                });
             }
         };
         checkTimer.schedule(timerTask, new Date(), TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES));
@@ -198,7 +204,11 @@ public class MainController extends Controller {
         client.setFileList(records);
         serializeRecords(records);
 
-        Refresh.getInstance().refreshAll();
+        try {
+            Refresh.getInstance().refreshAll();
+        } catch (RemoteException e) {
+            Platform.runLater(() -> {new ErrorAlert("Service unreachable.");});
+        }
     }
 
     public void deleteFileFromTable(){
@@ -325,8 +335,8 @@ public class MainController extends Controller {
     public void showLoginDialog() {
         if(startServer()) {
             loginController.showLoginDialog();
-            loadProperties();
             if(client.isLoggedIn()) {
+                loadProperties();
                 fileTransferController.setRemoteSession(client.getRemoteSession());
                 loadSerializedRecords();
                 if(autoSyncButton.isSelected()) setSyncTimerTask();

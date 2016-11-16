@@ -86,6 +86,8 @@ public class LoginController extends Controller {
     public void setUsernameInTitle() {
         if (client.isLoggedIn())
             Main.primaryStage.setTitle("CopyCat (" + client.getClientCredentials().getUsername() + ")");
+        else
+            Main.primaryStage.setTitle("CopyCat");
     }
 
     public void registerClient() {

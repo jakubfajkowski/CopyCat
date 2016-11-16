@@ -1,8 +1,9 @@
 package client.controller;
 
 import client.Refresh;
-import client.alert.CopyAlert;
 import client.alert.ErrorAlert;
+import client.alert.InfoAlert;
+import client.alert.SyncAlert;
 import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
@@ -46,28 +47,11 @@ public class FileTransferController extends Controller {
             }
         };
 
-        CopyAlert copyAlert = new CopyAlert(task);
+        SyncAlert syncAlert = new SyncAlert(task);
 
-        task.setOnSucceeded(event -> {
-            copying = false;
-            copyAlert.setDone();
-        });
-        task.setOnCancelled(event -> {
-            try {
-                remoteInputStream.close(true);
-                copying = false;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }});
-        task.setOnFailed(event -> {
-            try {
-                copying = false;
-                copyAlert.close();
-                throw task.getException();
-            } catch (Throwable throwable) {
-                new ErrorAlert(throwable.getMessage());
-            }
-        });
+        setOnSucceededTask(task, syncAlert);
+        setOnCancelledTask(task, syncAlert);
+        setOnFailedTask(task, syncAlert);
 
         new Thread(task).start();
     }
@@ -103,33 +87,48 @@ public class FileTransferController extends Controller {
             }
         };
 
-        CopyAlert copyAlert = new CopyAlert(task);
+        SyncAlert syncAlert = new SyncAlert(task);
 
+        setOnSucceededTask(task, syncAlert);
+        setOnCancelledTask(task, syncAlert);
+        setOnFailedTask(task, syncAlert);
+
+        new Thread(task).start();
+
+    }
+
+    private void setOnSucceededTask(Task<Void> task, SyncAlert syncAlert){
         task.setOnSucceeded(event -> {
             copying = false;
-            copyAlert.setDone();
+            syncAlert.setDone();
         });
+    }
+
+    private void setOnCancelledTask(Task<Void> task, SyncAlert syncAlert) {
         task.setOnCancelled(event -> {
             try {
                 remoteInputStream.close(true);
                 copying = false;
-                Files.delete(fileInfo.getPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }});
+    }
+
+    private void setOnFailedTask(Task<Void> task, SyncAlert syncAlert) {
         task.setOnFailed(event -> {
             try {
                 copying = false;
-                copyAlert.close();
-                Files.delete(fileInfo.getPath());
+                syncAlert.close();
                 throw task.getException();
             } catch (Throwable throwable) {
-                new ErrorAlert(throwable.getMessage());
+                if (throwable instanceof FileNotFoundException) {
+                    new InfoAlert("File not found.");
+                }
+                else if (throwable instanceof RemoteException) {
+                    new ErrorAlert("Service unreachable.");
+                }
             }
         });
-
-        new Thread(task).start();
-
     }
 
     private void getFile(FileInfo fileInfo, RemoteInputStream remoteInputStream) throws IOException {
